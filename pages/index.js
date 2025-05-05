@@ -4,7 +4,7 @@ import styles from '../styles/Home.module.css';
 import { 
   FiPlus, FiMinus, FiEdit, FiEye, FiEyeOff, 
   FiTrash2, FiSave, FiArrowUp, FiArrowDown, 
-  FiChevronLeft, FiChevronRight 
+  FiChevronLeft, FiChevronRight, FiAlertCircle 
 } from 'react-icons/fi';
 
 export default function Home() {
@@ -33,38 +33,68 @@ export default function Home() {
     sources: false
   });
   const [currentImageIndices, setCurrentImageIndices] = useState({});
-
-  useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_GITHUB_OWNER || !process.env.NEXT_PUBLIC_GITHUB_REPO) {
-      console.error('Missing required GitHub environment variables');
-    }
-  }, []);
+  const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
+      setLoadError(null);
       try {
+        // Try to load blocks data
         const blocksRes = await fetch('/api/github?path=data/airdrop/data.json');
+        if (!blocksRes.ok) throw new Error('Failed to fetch blocks data');
+        
         const blocksData = await blocksRes.json();
         if (blocksData.content) {
-          const decodedContent = decodeURIComponent(escape(atob(blocksData.content)));
-          setBlocks(JSON.parse(decodedContent));
+          try {
+            const decodedContent = decodeURIComponent(escape(atob(blocksData.content)));
+            setBlocks(JSON.parse(decodedContent));
+          } catch (parseError) {
+            console.error('Error parsing blocks data:', parseError);
+            // Try to initialize with empty array if parse fails
+            setBlocks([]);
+          }
+        } else {
+          setBlocks([]);
         }
 
+        // Try to load tags data
         const tagsRes = await fetch('/api/github?path=data/tags/tags.json');
+        if (!tagsRes.ok) throw new Error('Failed to fetch tags data');
+        
         const tagsData = await tagsRes.json();
         if (tagsData.content) {
-          const decodedTags = decodeURIComponent(escape(atob(tagsData.content)));
-          setAllTags(JSON.parse(decodedTags));
+          try {
+            const decodedTags = decodeURIComponent(escape(atob(tagsData.content)));
+            setAllTags(JSON.parse(decodedTags));
+          } catch (parseError) {
+            console.error('Error parsing tags data:', parseError);
+            // Fallback to default tags if parse fails
+            setAllTags(["daily", "WL", "retro", "testnet"]);
+          }
+        } else {
+          setAllTags(["daily", "WL", "retro", "testnet"]);
         }
+
       } catch (error) {
         console.error('Error loading data:', error);
-        setMessage('❌ Failed to load data');
+        setLoadError(error.message);
+        setMessage(`❌ ${error.message}`);
+        
+        // Initialize with empty data if loading fails
+        setBlocks([]);
+        setAllTags(["daily", "WL", "retro", "testnet"]);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchData();
+
+    if (process.env.NEXT_PUBLIC_GITHUB_OWNER && process.env.NEXT_PUBLIC_GITHUB_REPO) {
+      fetchData();
+    } else {
+      setLoadError('GitHub configuration missing');
+      setMessage('❌ GitHub configuration missing');
+    }
   }, []);
 
   const getImageDisplayUrl = (imgPath) => {
@@ -437,6 +467,11 @@ export default function Home() {
 
       <header className={styles.header}>
         <h1>Airdrop Editor</h1>
+        {loadError && (
+          <div className={styles.loadErrorBanner}>
+            <FiAlertCircle /> Warning: {loadError} - You can still edit and save changes
+          </div>
+        )}
       </header>
 
       <div className={styles.mainContent}>
