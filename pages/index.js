@@ -1,11 +1,7 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
-import { 
-  FiPlus, FiMinus, FiEdit, FiEye, FiEyeOff, 
-  FiTrash2, FiSave, FiArrowUp, FiArrowDown, 
-  FiChevronLeft, FiChevronRight, FiAlertCircle 
-} from 'react-icons/fi';
+import { FiPlus, FiMinus, FiEdit, FiEye, FiEyeOff, FiTrash2, FiSave, FiArrowUp, FiArrowDown } from 'react-icons/fi';
 
 export default function Home() {
   const [blocks, setBlocks] = useState([]);
@@ -24,78 +20,45 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [filter, setFilter] = useState('recent-updated');
-  const [showSections, setShowSections] = useState({
-    title: true,
-    steps: false,
-    images: false,
-    information: false,
-    tags: false,
-    sources: false
-  });
-  const [currentImageIndices, setCurrentImageIndices] = useState({});
-  const [loadError, setLoadError] = useState(null);
+
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_GITHUB_OWNER || !process.env.NEXT_PUBLIC_GITHUB_REPO) {
+      console.error('Missing required GitHub environment variables');
+    }
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      setLoadError(null);
       try {
-        // Try to load blocks data
         const blocksRes = await fetch('/api/github?path=data/airdrop/data.json');
-        if (!blocksRes.ok) throw new Error('Failed to fetch blocks data');
-        
         const blocksData = await blocksRes.json();
         if (blocksData.content) {
-          try {
-            const decodedContent = decodeURIComponent(escape(atob(blocksData.content)));
-            setBlocks(JSON.parse(decodedContent));
-          } catch (parseError) {
-            console.error('Error parsing blocks data:', parseError);
-            // Try to initialize with empty array if parse fails
-            setBlocks([]);
-          }
-        } else {
-          setBlocks([]);
+          // Decode base64 and parse with UTF-8 support
+          const decodedContent = decodeURIComponent(escape(atob(blocksData.content)));
+          setBlocks(JSON.parse(decodedContent));
         }
 
-        // Try to load tags data
         const tagsRes = await fetch('/api/github?path=data/tags/tags.json');
-        if (!tagsRes.ok) throw new Error('Failed to fetch tags data');
-        
         const tagsData = await tagsRes.json();
         if (tagsData.content) {
-          try {
-            const decodedTags = decodeURIComponent(escape(atob(tagsData.content)));
-            setAllTags(JSON.parse(decodedTags));
-          } catch (parseError) {
-            console.error('Error parsing tags data:', parseError);
-            // Fallback to default tags if parse fails
-            setAllTags(["daily", "WL", "retro", "testnet"]);
-          }
-        } else {
-          setAllTags(["daily", "WL", "retro", "testnet"]);
+          const decodedTags = decodeURIComponent(escape(atob(tagsData.content)));
+          setAllTags(JSON.parse(decodedTags));
         }
-
       } catch (error) {
         console.error('Error loading data:', error);
-        setLoadError(error.message);
-        setMessage(`❌ ${error.message}`);
-        
-        // Initialize with empty data if loading fails
-        setBlocks([]);
-        setAllTags(["daily", "WL", "retro", "testnet"]);
+        setMessage('❌ Failed to load data');
       } finally {
         setIsLoading(false);
       }
     };
-
-    if (process.env.NEXT_PUBLIC_GITHUB_OWNER && process.env.NEXT_PUBLIC_GITHUB_REPO) {
-      fetchData();
-    } else {
-      setLoadError('GitHub configuration missing');
-      setMessage('❌ GitHub configuration missing');
-    }
+    fetchData();
   }, []);
+
+  // Modified to preserve all special characters and emojis
+  const encodeText = (text) => {
+    return text;
+  };
 
   const getImageDisplayUrl = (imgPath) => {
     if (!imgPath) return '';
@@ -182,29 +145,6 @@ export default function Home() {
     setFilterTags(filterTags.includes(tag) ? filterTags.filter(t => t !== tag) : [...filterTags, tag]);
   };
 
-  // Section toggles
-  const toggleSection = (section) => {
-    setShowSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
-
-  // Image slider navigation
-  const nextImage = (blockId) => {
-    setCurrentImageIndices(prev => ({
-      ...prev,
-      [blockId]: prev[blockId] >= blocks.find(b => b.id === blockId).images.length - 1 ? 0 : (prev[blockId] || 0) + 1
-    }));
-  };
-
-  const prevImage = (blockId) => {
-    setCurrentImageIndices(prev => ({
-      ...prev,
-      [blockId]: prev[blockId] <= 0 ? blocks.find(b => b.id === blockId).images.length - 1 : (prev[blockId] || 0) - 1
-    }));
-  };
-
   const saveBlock = async () => {
     if (!title.trim()) {
       setMessage('❌ Title is required');
@@ -250,12 +190,17 @@ export default function Home() {
 
     const blockData = {
       id: editingId || Date.now().toString(),
-      title: title,
-      steps: showSections.steps ? steps.filter(step => step.text.trim() !== '') : [],
-      information: showSections.information ? information.split('\n').filter(line => line.trim() !== '') : [],
-      tags: showSections.tags ? tags : [],
-      sourceLinks: showSections.sources ? sourceLinks.filter(link => link.trim() !== '') : [],
-      images: showSections.images ? uploadedImages : [],
+      title: title, // No encoding needed as we'll handle UTF-8 in JSON.stringify
+      steps: steps.filter(step => step.text.trim() !== '').map(step => ({
+        text: step.text, // Preserve original text
+        link: step.link
+      })),
+      information: information.split('\n')
+        .filter(line => line.trim() !== '')
+        .map(line => line), // Preserve original line
+      tags,
+      sourceLinks: sourceLinks.filter(link => link.trim() !== ''),
+      images: uploadedImages,
       visibility,
       createdAt: editingId ? blocks.find(b => b.id === editingId)?.createdAt || now : now,
       updatedAt: now
@@ -270,7 +215,10 @@ export default function Home() {
       : [...blocks, blockData];
 
     try {
+      // Convert to JSON with UTF-8 support
       const jsonContent = JSON.stringify(updatedBlocks, null, 2);
+      
+      // Encode to base64 with UTF-8 support
       const utf8Content = unescape(encodeURIComponent(jsonContent));
       const base64Content = btoa(utf8Content);
 
@@ -308,14 +256,6 @@ export default function Home() {
     setSourceLinks(['']);
     setVisibility('show');
     setEditingId(null);
-    setShowSections({
-      title: true,
-      steps: false,
-      images: false,
-      information: false,
-      tags: false,
-      sources: false
-    });
   };
 
   const editBlock = (id) => {
@@ -335,14 +275,6 @@ export default function Home() {
       setSourceLinks(block.sourceLinks?.length > 0 ? block.sourceLinks : ['']);
       setVisibility(block.visibility || 'show');
       setEditingId(id);
-      setShowSections({
-        title: true,
-        steps: block.steps.length > 0,
-        images: block.images?.length > 0,
-        information: block.information?.length > 0,
-        tags: block.tags?.length > 0,
-        sources: block.sourceLinks?.length > 0
-      });
     }
   };
 
@@ -351,6 +283,7 @@ export default function Home() {
       setIsLoading(true);
       const updatedBlocks = blocks.filter(b => b.id !== id);
       try {
+        // Convert to JSON with UTF-8 support
         const jsonContent = JSON.stringify(updatedBlocks, null, 2);
         const utf8Content = unescape(encodeURIComponent(jsonContent));
         const base64Content = btoa(utf8Content);
@@ -395,6 +328,7 @@ export default function Home() {
     });
 
     try {
+      // Convert to JSON with UTF-8 support
       const jsonContent = JSON.stringify(updatedBlocks, null, 2);
       const utf8Content = unescape(encodeURIComponent(jsonContent));
       const base64Content = btoa(utf8Content);
@@ -467,11 +401,6 @@ export default function Home() {
 
       <header className={styles.header}>
         <h1>Airdrop Editor</h1>
-        {loadError && (
-          <div className={styles.loadErrorBanner}>
-            <FiAlertCircle /> Warning: {loadError} - You can still edit and save changes
-          </div>
-        )}
       </header>
 
       <div className={styles.mainContent}>
@@ -479,179 +408,126 @@ export default function Home() {
           <form onSubmit={(e) => { e.preventDefault(); saveBlock(); }} className={styles.form}>
             <h2>{editingId ? 'Edit Block' : 'Add New Block'}</h2>
             
-            <div className={styles.sectionToggle}>
-              <button 
-                type="button" 
-                onClick={() => toggleSection('title')}
-                className={styles.toggleButton}
-              >
-                {showSections.title ? 'Hide' : 'Show'} Title
-              </button>
+            <div className={styles.formGroup}>
+              <label>Title *</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Block title"
+                required
+                className={styles.input}
+              />
             </div>
-            {showSections.title && (
-              <div className={styles.formGroup}>
-                <label>Title *</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Block title"
-                  required
-                  className={styles.input}
-                />
-              </div>
-            )}
 
-            <div className={styles.sectionToggle}>
-              <button 
-                type="button" 
-                onClick={() => toggleSection('steps')}
-                className={styles.toggleButton}
-              >
-                {showSections.steps ? 'Hide' : 'Show'} Steps
-              </button>
-            </div>
-            {showSections.steps && (
-              <div className={styles.formGroup}>
-                <label>Steps</label>
-                {steps.map((step, index) => (
-                  <div key={index} className={styles.stepRow}>
-                    <div className={styles.stepControls}>
-                      <button
-                        type="button"
-                        onClick={() => moveStepUp(index)}
-                        disabled={index === 0}
-                        className={styles.moveButton}
-                        title="Move up"
-                      >
-                        <FiArrowUp />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveStepDown(index)}
-                        disabled={index === steps.length - 1}
-                        className={styles.moveButton}
-                        title="Move down"
-                      >
-                        <FiArrowDown />
-                      </button>
-                    </div>
-                    <input
-                      type="text"
-                      value={step.text}
-                      onChange={(e) => updateStep(index, 'text', e.target.value)}
-                      placeholder="Step description"
-                      className={styles.input}
-                    />
-                    <input
-                      type="url"
-                      value={step.link}
-                      onChange={(e) => updateStep(index, 'link', e.target.value)}
-                      placeholder="Link (optional)"
-                      className={styles.input}
-                    />
+            <div className={styles.formGroup}>
+              <label>Steps</label>
+              {steps.map((step, index) => (
+                <div key={index} className={styles.stepRow}>
+                  <div className={styles.stepControls}>
                     <button
                       type="button"
-                      onClick={() => removeStep(index)}
-                      disabled={steps.length <= 1}
+                      onClick={() => moveStepUp(index)}
+                      disabled={index === 0}
+                      className={styles.moveButton}
+                      title="Move up"
+                    >
+                      <FiArrowUp />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveStepDown(index)}
+                      disabled={index === steps.length - 1}
+                      className={styles.moveButton}
+                      title="Move down"
+                    >
+                      <FiArrowDown />
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={step.text}
+                    onChange={(e) => updateStep(index, 'text', e.target.value)}
+                    placeholder="Step description"
+                    className={styles.input}
+                  />
+                  <input
+                    type="url"
+                    value={step.link}
+                    onChange={(e) => updateStep(index, 'link', e.target.value)}
+                    placeholder="Link (optional)"
+                    className={styles.input}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeStep(index)}
+                    disabled={steps.length <= 1}
+                    className={styles.stepButton}
+                  >
+                    <FiMinus />
+                  </button>
+                  {index === steps.length - 1 && (
+                    <button
+                      type="button"
+                      onClick={addStep}
                       className={styles.stepButton}
+                    >
+                      <FiPlus />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Images</label>
+              {images.map((img, index) => (
+                <div key={index} className={styles.imageInputContainer}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload(e, index)}
+                    className={styles.input}
+                  />
+                  <p className={styles.imageOrText}>OR</p>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    placeholder="Image URL"
+                    value={img.url}
+                    onChange={(e) => updateImage(index, 'url', e.target.value)}
+                  />
+                  <div className={styles.imageControls}>
+                    <button 
+                      type="button"
+                      className={styles.stepButton} 
+                      onClick={() => removeImage(index)}
+                      disabled={images.length <= 1}
                     >
                       <FiMinus />
                     </button>
-                    {index === steps.length - 1 && (
-                      <button
-                        type="button"
-                        onClick={addStep}
-                        className={styles.stepButton}
-                      >
+                    {index === images.length - 1 && (
+                      <button type="button" className={styles.stepButton} onClick={addImage}>
                         <FiPlus />
                       </button>
                     )}
                   </div>
-                ))}
-              </div>
-            )}
-
-            <div className={styles.sectionToggle}>
-              <button 
-                type="button" 
-                onClick={() => toggleSection('images')}
-                className={styles.toggleButton}
-              >
-                {showSections.images ? 'Hide' : 'Show'} Images
-              </button>
+                </div>
+              ))}
             </div>
-            {showSections.images && (
-              <div className={styles.formGroup}>
-                <label>Images</label>
-                {images.map((img, index) => (
-                  <div key={index} className={styles.imageInputContainer}>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageUpload(e, index)}
-                      className={styles.input}
-                    />
-                    <p className={styles.imageOrText}>OR</p>
-                    <input
-                      type="text"
-                      className={styles.input}
-                      placeholder="Image URL"
-                      value={img.url}
-                      onChange={(e) => updateImage(index, 'url', e.target.value)}
-                    />
-                    <div className={styles.imageControls}>
-                      <button 
-                        type="button"
-                        className={styles.stepButton} 
-                        onClick={() => removeImage(index)}
-                        disabled={images.length <= 1}
-                      >
-                        <FiMinus />
-                      </button>
-                      {index === images.length - 1 && (
-                        <button type="button" className={styles.stepButton} onClick={addImage}>
-                          <FiPlus />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
 
-            <div className={styles.sectionToggle}>
-              <button 
-                type="button" 
-                onClick={() => toggleSection('information')}
-                className={styles.toggleButton}
-              >
-                {showSections.information ? 'Hide' : 'Show'} Information
-              </button>
+            <div className={styles.formGroup}>
+              <label>Additional Information</label>
+              <textarea
+                value={information}
+                onChange={(e) => setInformation(e.target.value)}
+                placeholder="Any additional information..."
+                rows={3}
+                className={styles.textarea}
+              />
             </div>
-            {showSections.information && (
-              <div className={styles.formGroup}>
-                <label>Additional Information</label>
-                <textarea
-                  value={information}
-                  onChange={(e) => setInformation(e.target.value)}
-                  placeholder="Any additional information..."
-                  rows={3}
-                  className={styles.textarea}
-                />
-              </div>
-            )}
 
-            <div className={styles.sectionToggle}>
-              <button 
-                type="button" 
-                onClick={() => toggleSection('tags')}
-                className={styles.toggleButton}
-              >
-                {showSections.tags ? 'Hide' : 'Show'} Tags
-              </button>
-            </div>
-            {showSections.tags && allTags.length > 0 && (
+            {allTags.length > 0 && (
               <div className={styles.formGroup}>
                 <label>Tags</label>
                 <div className={styles.tagsContainer}>
@@ -670,48 +546,37 @@ export default function Home() {
               </div>
             )}
 
-            <div className={styles.sectionToggle}>
-              <button 
-                type="button" 
-                onClick={() => toggleSection('sources')}
-                className={styles.toggleButton}
-              >
-                {showSections.sources ? 'Hide' : 'Show'} Sources
-              </button>
-            </div>
-            {showSections.sources && (
-              <div className={styles.formGroup}>
-                <label>Source Links</label>
-                {sourceLinks.map((link, index) => (
-                  <div key={index} className={styles.sourceRow}>
-                    <input
-                      type="url"
-                      value={link}
-                      onChange={(e) => updateSourceLink(index, e.target.value)}
-                      placeholder="Source URL"
-                      className={styles.input}
-                    />
+            <div className={styles.formGroup}>
+              <label>Source Links</label>
+              {sourceLinks.map((link, index) => (
+                <div key={index} className={styles.sourceRow}>
+                  <input
+                    type="url"
+                    value={link}
+                    onChange={(e) => updateSourceLink(index, e.target.value)}
+                    placeholder="Source URL"
+                    className={styles.input}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeSourceLink(index)}
+                    disabled={sourceLinks.length <= 1}
+                    className={styles.stepButton}
+                  >
+                    <FiMinus />
+                  </button>
+                  {index === sourceLinks.length - 1 && (
                     <button
                       type="button"
-                      onClick={() => removeSourceLink(index)}
-                      disabled={sourceLinks.length <= 1}
+                      onClick={addSourceLink}
                       className={styles.stepButton}
                     >
-                      <FiMinus />
+                      <FiPlus />
                     </button>
-                    {index === sourceLinks.length - 1 && (
-                      <button
-                        type="button"
-                        onClick={addSourceLink}
-                        className={styles.stepButton}
-                      >
-                        <FiPlus />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+                  )}
+                </div>
+              ))}
+            </div>
 
             <div className={styles.formGroup}>
               <label>Visibility *</label>
@@ -862,59 +727,6 @@ export default function Home() {
                       </button>
                     </div>
                   </div>
-
-                  {block.images?.length > 0 && (
-                    <div className={styles.imageSliderContainer}>
-                      <div className={styles.imageSlider}>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            prevImage(block.id);
-                          }} 
-                          className={styles.sliderArrow}
-                        >
-                          <FiChevronLeft />
-                        </button>
-                        
-                        <div className={styles.sliderImageWrapper}>
-                          <img 
-                            src={getImageDisplayUrl(block.images[currentImageIndices[block.id] || 0])} 
-                            alt={`${block.title} image ${(currentImageIndices[block.id] || 0) + 1}`} 
-                            className={styles.sliderImage}
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'block';
-                            }}
-                          />
-                          <div className={styles.imageError} style={{ display: 'none' }}>
-                            Image failed to load
-                          </div>
-                        </div>
-                        
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            nextImage(block.id);
-                          }} 
-                          className={styles.sliderArrow}
-                        >
-                          <FiChevronRight />
-                        </button>
-                      </div>
-                      <div className={styles.sliderDots}>
-                        {block.images.map((_, index) => (
-                          <span 
-                            key={index}
-                            className={`${styles.dot} ${index === (currentImageIndices[block.id] || 0) ? styles.activeDot : ''}`}
-                            onClick={() => setCurrentImageIndices(prev => ({
-                              ...prev,
-                              [block.id]: index
-                            }))}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {block.steps?.length > 0 && (
                     <div className={styles.stepsList}>
