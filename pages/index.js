@@ -976,45 +976,45 @@ const handleNextImage = (blockIndex) => {
                   )}
 
                   {block.information?.length > 0 && (
-  <div className={styles.additionalInfo}>
-    <h4>Information:</h4>
-    {Array.isArray(block.information) ? (
-      block.information.map((line, i) => (
-        <p key={i}>{line}</p>
-      ))
-    ) : (
-      <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
-        {typeof block.information === 'string' 
-          ? block.information 
-          : JSON.stringify(block.information, null, 2)}
-      </pre>
-    )}
-  </div>
-)}
+    <div className={styles.additionalInfo}>
+      <h4>Information:</h4>
+      {Array.isArray(block.information) ? (
+        block.information.map((line, i) => (
+          <p key={i}>{line}</p>
+        ))
+      ) : (
+        <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+          {typeof block.information === 'string'
+            ? block.information
+            : JSON.stringify(block.information, null, 2)}
+        </pre>
+      )}
+    </div>
+  )}
 
-                  {block.tags?.length > 0 && (
-                    <div className={styles.itemTags}>
-                      {block.tags.map(tag => (
-                        <span key={tag} className={styles.tagPill}>{tag}</span>
-                      ))}
-                    </div>
-                  )}
+  {block.tags?.length > 0 && (
+    <div className={styles.itemTags}>
+      {block.tags.map(tag => (
+        <span key={tag} className={styles.tagPill}>{tag}</span>
+      ))}
+    </div>
+  )}
 
-                  {block.sourceLinks?.length > 0 && (
-                    <div className={styles.itemSources}>
-                      {block.sourceLinks.map((link, i) => (
-                        <a 
-                          key={i} 
-                          href={link} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className={styles.sourceLink}
-                        >
-                          {link}
-                        </a>
-                      ))}
-                    </div>
-                  )}
+  {block.sourceLinks?.length > 0 && (
+    <div className={styles.itemSources}>
+      {block.sourceLinks.map((link, i) => (
+        <a
+          key={i}
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.sourceLink}
+        >
+          {link}
+        </a>
+      ))}
+    </div>
+  )}
 
                   <div className={styles.itemMeta}>
                     <div className={styles.metaRow}>
