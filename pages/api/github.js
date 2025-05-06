@@ -39,66 +39,67 @@ export default async function handler(req, res) {
       console.error('GET error:', error);
       res.status(500).json({ error: 'Failed to fetch file from GitHub', details: error.response?.data });
     }
-  }
+  } else if (req.method === 'POST') {
+    const { content, message, upload, append } = req.body;
 
-  else if (req.method === 'POST') {
-  const { content, message, upload, append } = req.body;
-
-  try {
-    // Get SHA of existing file (if any)
-    let sha = null;
     try {
-      const fileResponse = await octokit.repos.getContent({
-        owner,
-        repo,
-        path,
-        ref: branch
-      });
-      sha = fileResponse.data.sha;
-    } catch (error) {
-      // File doesn't exist yet, sha remains null
-    }
-
-    // Prepare content - no need to base64 encode since we're sending as string
-    let newContent;
-    if (append) {
+      // Get SHA of existing file (if any)
+      let sha = null;
       try {
-        const existing = await octokit.repos.getContent({
+        const fileResponse = await octokit.repos.getContent({
           owner,
           repo,
           path,
           ref: branch
         });
-        const existingContent = Buffer.from(existing.data.content, 'base64').toString('utf8');
-        const parsedExisting = JSON.parse(existingContent);
-        const toAppend = typeof content === 'string' ? JSON.parse(content) : content;
-        const merged = [...parsedExisting, toAppend];
-        newContent = JSON.stringify(merged, null, 2);
-      } catch (e) {
-        newContent = JSON.stringify([content], null, 2);
+        sha = fileResponse.data.sha;
+      } catch (error) {
+        // File doesn't exist yet, sha remains null
       }
-    } else {
-      newContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+
+      // Prepare content - no need to base64 encode since we're sending as string
+      let newContent;
+      if (append) {
+        try {
+          const existing = await octokit.repos.getContent({
+            owner,
+            repo,
+            path,
+            ref: branch
+          });
+          const existingContent = Buffer.from(existing.data.content, 'base64').toString('utf8');
+          const parsedExisting = JSON.parse(existingContent);
+          const toAppend = typeof content === 'string' ? JSON.parse(content) : content;
+          const merged = [...parsedExisting, toAppend];
+          newContent = JSON.stringify(merged, null, 2);
+        } catch (e) {
+          newContent = JSON.stringify([content], null, 2);
+        }
+      } else {
+        newContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+      }
+
+      const response = await octokit.repos.createOrUpdateFileContents({
+        owner,
+        repo,
+        path,
+        message,
+        content: Buffer.from(newContent).toString('base64'), // GitHub still requires base64
+        sha,
+        branch,
+        // Add this to ensure proper encoding
+        headers: {
+          'accept': 'application/vnd.github.v3+json',
+          'content-type': 'application/json; charset=utf-8'
+        }
+      });
+
+      res.status(200).json(response.data);
+    } catch (error) {
+      console.error('POST error:', error);
+      res.status(500).json({ error: 'Failed to update file on GitHub', details: error.response?.data });
     }
-
-    const response = await octokit.repos.createOrUpdateFileContents({
-      owner,
-      repo,
-      path,
-      message,
-      content: Buffer.from(newContent).toString('base64'), // GitHub still requires base64
-      sha,
-      branch,
-      // Add this to ensure proper encoding
-      headers: {
-        'accept': 'application/vnd.github.v3+json',
-        'content-type': 'application/json; charset=utf-8'
-      }
-    });
-
-    res.status(200).json(response.data);
-  } catch (error) {
-    console.error('POST error:', error);
-    res.status(500).json({ error: 'Failed to update file on GitHub', details: error.response?.data });
+  } else {
+    res.status(405).json({ error: 'Method Not Allowed' });
   }
 }
