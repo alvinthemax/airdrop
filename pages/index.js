@@ -159,16 +159,26 @@ export default function Home() {
   };
 
 // left right arrow buttons
-const handleNext = () => {
-  if (images.length <= 1) return; // Hanya 1 gambar, tidak perlu navigasi
-  setCurrentIndex((prev) => (prev + 1) % images.length);
+const handlePrevImage = (blockIndex) => {
+  if (blocks[blockIndex].images.length <= 1) return; // Tambahkan pengecekan ini
+  setCurrentImageIndex((prev) => {
+    const newIndexes = [...prev];
+    newIndexes[blockIndex] =
+      (newIndexes[blockIndex] - 1 + blocks[blockIndex].images.length) %
+      blocks[blockIndex].images.length;
+    return newIndexes;
+  });
 };
 
-const handlePrev = () => {
-  if (images.length <= 1) return;
-  setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+const handleNextImage = (blockIndex) => {
+  if (blocks[blockIndex].images.length <= 1) return; // Tambahkan pengecekan ini
+  setCurrentImageIndex((prev) => {
+    const newIndexes = [...prev];
+    newIndexes[blockIndex] =
+      (newIndexes[blockIndex] + 1) % blocks[blockIndex].images.length;
+    return newIndexes;
+  });
 };
-
 
   // Sources management
   const addSourceLink = () => setSourceLinks([...sourceLinks, '']);
