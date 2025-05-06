@@ -42,50 +42,63 @@ export default async function handler(req, res) {
   }
 
   else if (req.method === 'POST') {
-    const { content, message, upload, append } = req.body;
+  const { content, message, upload, append } = req.body;
 
+  try {
+    // Get SHA of existing file (if any)
+    let sha = null;
     try {
-      // Ambil SHA dari file
       const fileResponse = await octokit.repos.getContent({
         owner,
         repo,
         path,
         ref: branch
       });
-
-      const fileData = fileResponse.data;
-      const sha = fileData.sha;
-
-      let newContent;
-      if (append) {
-        const existing = JSON.parse(Buffer.from(fileData.content, 'base64').toString('utf8'));
-        const toAppend = typeof content === 'string' ? JSON.parse(content) : content;
-        const merged = [...existing, toAppend];
-        newContent = Buffer.from(JSON.stringify(merged, null, 2)).toString('base64');
-      } else {
-        newContent = Buffer.from(
-          typeof content === 'string' ? content : JSON.stringify(content, null, 2)
-        ).toString('base64');
-      }
-
-      const response = await octokit.repos.createOrUpdateFileContents({
-        owner,
-        repo,
-        path,
-        message,
-        content: newContent,
-        sha,
-        branch
-      });
-
-      res.status(200).json(response.data);
+      sha = fileResponse.data.sha;
     } catch (error) {
-      console.error('POST error:', error);
-      res.status(500).json({ error: 'Failed to update file on GitHub', details: error.response?.data });
+      // File doesn't exist yet, sha remains null
     }
-  }
 
-  else {
-    res.status(405).json({ error: 'Method not allowed' });
+    // Prepare content - no need to base64 encode since we're sending as string
+    let newContent;
+    if (append) {
+      try {
+        const existing = await octokit.repos.getContent({
+          owner,
+          repo,
+          path,
+          ref: branch
+        });
+        const existingContent = Buffer.from(existing.data.content, 'base64').toString('utf8');
+        const parsedExisting = JSON.parse(existingContent);
+        const toAppend = typeof content === 'string' ? JSON.parse(content) : content;
+        const merged = [...parsedExisting, toAppend];
+        newContent = JSON.stringify(merged, null, 2);
+      } catch (e) {
+        newContent = JSON.stringify([content], null, 2);
+      }
+    } else {
+      newContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+    }
+
+    const response = await octokit.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path,
+      message,
+      content: Buffer.from(newContent).toString('base64'), // GitHub still requires base64
+      sha,
+      branch,
+      // Add this to ensure proper encoding
+      headers: {
+        'accept': 'application/vnd.github.v3+json',
+        'content-type': 'application/json; charset=utf-8'
+      }
+    });
+
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error('POST error:', error);
+    res.status(500).json({ error: 'Failed to update file on GitHub', details: error.response?.data });
   }
 }
