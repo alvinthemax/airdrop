@@ -886,57 +886,68 @@ const handleNextImage = (blockIndex) => {
                   </div>
 
                   {block.images?.length > 0 && (
-                    <div className={styles.imageSliderContainer}>
-                      <div className={styles.imageSlider}>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            prevImage(block.id);
-                          }} 
-                          className={styles.sliderArrow}
-                        >
-                          <FiChevronLeft />
-                        </button>
-                        
-                        <div className={styles.sliderImageWrapper}>
-                          <img 
-                            src={getImageDisplayUrl(block.images[currentImageIndices[block.id] || 0])} 
-                            alt={`${block.title} image ${(currentImageIndices[block.id] || 0) + 1}`} 
-                            className={styles.sliderImage}
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'block';
-                            }}
-                          />
-                          <div className={styles.imageError} style={{ display: 'none' }}>
-                            Image failed to load
-                          </div>
-                        </div>
-                        
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            nextImage(block.id);
-                          }} 
-                          className={styles.sliderArrow}
-                        >
-                          <FiChevronRight />
-                        </button>
-                      </div>
-                      <div className={styles.sliderDots}>
-                        {block.images.map((_, index) => (
-                          <span 
-                            key={index}
-                            className={`${styles.dot} ${index === (currentImageIndices[block.id] || 0) ? styles.activeDot : ''}`}
-                            onClick={() => setCurrentImageIndices(prev => ({
-                              ...prev,
-                              [block.id]: index
-                            }))}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
+  <div className={styles.imageSliderContainer}>
+    <div className={styles.imageSlider}>
+      {block.images.length > 1 && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            prevImage(block.id);
+          }}
+          className={styles.sliderArrow}
+        >
+          <FiChevronLeft />
+        </button>
+      )}
+
+      <div className={styles.sliderImageWrapper}>
+        <img
+          src={getImageDisplayUrl(block.images[currentImageIndices[block.id] || 0])}
+          alt={`${block.title} image ${(currentImageIndices[block.id] || 0) + 1}`}
+          className={styles.sliderImage}
+          onError={(e) => {
+            e.target.style.display = 'none';
+            e.target.nextSibling.style.display = 'block';
+          }}
+        />
+        <div className={styles.imageError} style={{ display: 'none' }}>
+          Image failed to load
+        </div>
+      </div>
+
+      {block.images.length > 1 && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            nextImage(block.id);
+          }}
+          className={styles.sliderArrow}
+        >
+          <FiChevronRight />
+        </button>
+      )}
+    </div>
+
+    {block.images.length > 1 && (
+      <div className={styles.sliderDots}>
+        {block.images.map((_, index) => (
+          <span
+            key={index}
+            className={`${styles.dot} ${
+              index === (currentImageIndices[block.id] || 0) ? styles.activeDot : ''
+            }`}
+            onClick={() =>
+              setCurrentImageIndices((prev) => ({
+                ...prev,
+                [block.id]: index,
+              }))
+            }
+          />
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
                   {block.steps?.length > 0 && (
                     <div className={styles.stepsList}>
