@@ -976,22 +976,21 @@ const handleNextImage = (blockIndex) => {
                   )}
 
                   {block.information?.length > 0 && (
-    <div className={styles.additionalInfo}>
-      <h4>Information:</h4>
-      {Array.isArray(block.information) ? (
-        block.information.map((line, i) => (
-          <p key={i}>{line}</p>
-        ))
-      ) : (
-        <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
-          {typeof block.information === 'object' 
-            ? JSON.stringify(block.information, null, 2)
-            : block.information}
-        </pre>
-      )}
-    </div>
-  )}
-}
+  <div className={styles.additionalInfo}>
+    <h4>Information:</h4>
+    {Array.isArray(block.information) ? (
+      block.information.map((line, i) => (
+        <p key={i}>{line}</p>
+      ))
+    ) : (
+      <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+        {typeof block.information === 'string' 
+          ? block.information 
+          : JSON.stringify(block.information, null, 2)}
+      </pre>
+    )}
+  </div>
+)}
 
                   {block.tags?.length > 0 && (
                     <div className={styles.itemTags}>
