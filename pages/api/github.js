@@ -5,13 +5,13 @@ const octokit = new Octokit({
 });
 
 export default async function handler(req, res) {
-  const { path } = req.body;
+  const { path } = req.query || req.body;
 
   if (req.method === 'POST') {
     const { content, message, upload } = req.body;
 
     try {
-      // Ambil sha file saat ini
+      // Get current file SHA
       const fileResponse = await fetch(`https://api.github.com/repos/${process.env.NEXT_PUBLIC_GITHUB_OWNER}/${process.env.NEXT_PUBLIC_GITHUB_REPO}/contents/${path}`, {
         headers: {
           'Authorization': `token ${process.env.GITHUB_TOKEN}`,
@@ -20,53 +20,80 @@ export default async function handler(req, res) {
       });
 
       const fileData = await fileResponse.json();
-
       const sha = fileData.sha;
 
-      // Siapkan body untuk update
-      const requestBody = {
-        message,
-        content: upload ? req.body.file : Buffer.from(JSON.stringify(content)).toString('base64'),
-        sha, // ← wajib!
-        path
-      };
-
-      // Kirim permintaan update
-      const response = await fetch(`https://api.github.com/repos/${process.env.NEXT_PUBLIC_GITHUB_OWNER}/${process.env.NEXT_PUBLIC_GITHUB_REPO}/contents/${path}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `token ${process.env.GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        res.status(200).json(data);
+      // Prepare content for upload
+      let encodedContent;
+      if (upload) {
+        encodedContent = req.body.file; // For image uploads
       } else {
-        res.status(500).json({ error: data.message || 'Failed to update file' });
+        // For JSON content, handle UTF-8 properly
+        if (typeof content === 'string') {
+          encodedContent = Buffer.from(content).toString('base64');
+        } else {
+          // Stringify with proper formatting and UTF-8 support
+          encodedContent = Buffer.from(JSON.stringify(content, null, 2)).toString('base64');
+        }
       }
 
+      // Prepare request body
+      const requestBody = {
+        owner: process.env.NEXT_PUBLIC_GITHUB_OWNER,
+        repo: process.env.NEXT_PUBLIC_GITHUB_REPO,
+        path,
+        message,
+        content: encodedContent,
+        sha,
+        branch: process.env.NEXT_PUBLIC_GITHUB_BRANCH || 'main'
+      };
+
+      // Make the update request using Octokit for better error handling
+      const response = await octokit.repos.createOrUpdateFileContents(requestBody);
+
+      res.status(200).json(response.data);
+
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error('GitHub API Error:', error);
+      res.status(500).json({ 
+        error: error.message || 'Failed to update file',
+        details: error.response?.data 
+      });
     }
   } else if (req.method === 'GET') {
-    // (tidak berubah)
     try {
-      const response = await fetch(`https://api.github.com/repos/${process.env.NEXT_PUBLIC_GITHUB_OWNER}/${process.env.NEXT_PUBLIC_GITHUB_REPO}/contents/${path}`, {
-        headers: {
-          'Authorization': `token ${process.env.GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json'
-        }
+      const response = await octokit.repos.getContent({
+        owner: process.env.NEXT_PUBLIC_GITHUB_OWNER,
+        repo: process.env.NEXT_PUBLIC_GITHUB_REPO,
+        path,
+        ref: process.env.NEXT_PUBLIC_GITHUB_BRANCH || 'main'
       });
-      
-      const data = await response.json();
-      res.status(200).json(data);
+
+      // Handle content decoding properly
+      let content;
+      if (response.data.content) {
+        if (response.data.encoding === 'base64') {
+          content = Buffer.from(response.data.content, 'base64').toString('utf8');
+          try {
+            // Try to parse JSON if it looks like JSON
+            content = JSON.parse(content);
+          } catch (e) {
+            // If not JSON, keep as is
+          }
+        } else {
+          content = response.data.content;
+        }
+      }
+
+      res.status(200).json({
+        ...response.data,
+        content
+      });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error('GitHub API Error:', error);
+      res.status(500).json({ 
+        error: error.message || 'Failed to fetch file',
+        details: error.response?.data 
+      });
     }
   }
 }
