@@ -306,7 +306,7 @@ const completeSave = async (blockData) => {
     : [...blocks, blockData];
 
   try {
-    // Stringify with pretty print and UTF-8 support
+    // Stringify with pretty print
     const jsonContent = JSON.stringify(updatedBlocks, null, 2);
 
     const res = await fetch('/api/github', {
@@ -314,7 +314,7 @@ const completeSave = async (blockData) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         path: 'data/airdrop/data.json',
-        content: jsonContent,
+        content: jsonContent, // Send as plain JSON string
         message: editingId ? `Update block ${editingId}` : 'Add new block'
       }),
     });
