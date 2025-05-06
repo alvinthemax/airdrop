@@ -39,17 +39,28 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'GET') {
-      const { path } = req.query;
-      
-      const response = await octokit.repos.getContent({
-        owner,
-        repo,
-        path,
-        ref: branch
-      });
+  const { path } = req.query;
 
-      return res.status(200).json(response.data);
-    }
+  const response = await octokit.repos.getContent({
+    owner,
+    repo,
+    path,
+    ref: branch
+  });
+
+  // Jika file (bukan folder), decode base64
+  if (response.data.type === 'file' && response.data.content) {
+    const content = Buffer.from(response.data.content, 'base64').toString('utf-8');
+    return res.status(200).json({
+      name: response.data.name,
+      path: response.data.path,
+      content, // sudah ter-decode
+      encoding: 'utf-8'
+    });
+  }
+
+  return res.status(200).json(response.data); // untuk folder atau file kosong
+}
 
     if (req.method === 'POST') {
       const { path, content, message } = req.body;
