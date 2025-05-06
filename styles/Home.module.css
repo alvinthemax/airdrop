@@ -789,4 +789,12 @@
 .dot:hover, .activeDot {
   background: #8B0000;
 }
+
+.additionalInfo pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: inherit;
+  margin: 0;
+  padding: 0;
+}
 }
