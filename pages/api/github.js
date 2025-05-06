@@ -5,98 +5,58 @@ const octokit = new Octokit({
 });
 
 export default async function handler(req, res) {
-  if (!process.env.GITHUB_OWNER || !process.env.GITHUB_REPO || !process.env.GITHUB_TOKEN) {
-    return res.status(500).json({
-      error: 'Server misconfiguration',
-      message: 'GitHub credentials not provided'
-    });
-  }
-
-  const { owner, repo, branch } = {
-    owner: process.env.GITHUB_OWNER,
-    repo: process.env.GITHUB_REPO,
-    branch: process.env.GITHUB_BRANCH || 'main'
-  };
-
-  try {
-    if (req.method === 'POST' && req.query.upload) {
-      const { file, path, message } = req.body;
+  if (req.method === 'GET') {
+    // Handle GET request
+    const { path } = req.query;
+    try {
+      const response = await fetch(`https://api.github.com/repos/${process.env.NEXT_PUBLIC_GITHUB_OWNER}/${process.env.NEXT_PUBLIC_GITHUB_REPO}/contents/${path}`, {
+        headers: {
+          'Authorization': `token ${process.env.GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
       
-      const response = await octokit.repos.createOrUpdateFileContents({
-        owner,
-        repo,
-        path,
-        message: message || `Upload ${path.split('/').pop()}`,
-        content: file,
-        branch
-      });
-
-      return res.status(200).json({
-        success: true,
-        content: response.data.content,
-        url: `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`
-      });
+      const data = await response.json();
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
-
-    if (req.method === 'GET') {
-  const { path } = req.query;
-
-  const response = await octokit.repos.getContent({
-    owner,
-    repo,
-    path,
-    ref: branch
-  });
-
-  // Jika file (bukan folder), decode base64
-  if (response.data.type === 'file' && response.data.content) {
-    const content = Buffer.from(response.data.content, 'base64').toString('utf-8');
-    return res.status(200).json({
-      name: response.data.name,
-      path: response.data.path,
-      content, // sudah ter-decode
-      encoding: 'utf-8'
-    });
-  }
-
-  return res.status(200).json(response.data); // untuk folder atau file kosong
-}
-
-    if (req.method === 'POST') {
-      const { path, content, message } = req.body;
-      
-      let sha;
-      try {
-        const existingFile = await octokit.repos.getContent({
-          owner,
-          repo,
-          path,
-          ref: branch
-        });
-        sha = existingFile.data.sha;
-      } catch (error) {
-        if (error.status !== 404) throw error;
+  } else if (req.method === 'POST') {
+    // Handle POST request
+    const { path, content, message, upload } = req.body;
+    
+    try {
+      let requestBody;
+      if (upload) {
+        // Handle file upload
+        requestBody = {
+          message,
+          content: req.body.file,
+          path: req.body.path
+        };
+      } else {
+        // Handle JSON content directly (no base64)
+        requestBody = {
+          message,
+          content: Buffer.from(JSON.stringify(content)).toString('base64'),
+          path
+        };
       }
 
-      const response = await octokit.repos.createOrUpdateFileContents({
-        owner,
-        repo,
-        path,
-        message: message || 'Update file',
-        content: Buffer.from(content).toString('base64'),
-        sha,
-        branch
+      const response = await fetch(`https://api.github.com/repos/${process.env.NEXT_PUBLIC_GITHUB_OWNER}/${process.env.NEXT_PUBLIC_GITHUB_REPO}/contents/${path}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${process.env.GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
       });
 
-      return res.status(200).json(response.data);
+      const data = await response.json();
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
-
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
-  } catch (error) {
-    console.error('GitHub API error:', error);
-    return res.status(error.status || 500).json({
-      error: error.message || 'GitHub API request failed',
-      details: error.response?.data
-    });
   }
 }
