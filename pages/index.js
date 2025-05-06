@@ -227,149 +227,153 @@ const handleNextImage = (blockIndex) => {
   };
 
   const saveBlock = async () => {
-    if (!title.trim()) {
-      setMessage('❌ Title is required');
-      return;
-    }
+  if (!title.trim()) {
+    setMessage('❌ Title is required');
+    return;
+  }
 
-    setIsLoading(true);
-    setMessage('');
-    const now = new Date().toISOString();
-    const uploadedImages = [];
-    
-    // Upload all images (keep this part the same)
-    for (const img of images) {
-      if (img.file) {
-        try {
-          const base64Data = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
-            reader.readAsDataURL(img.file);
-          });
+  setIsLoading(true);
+  setMessage('');
+  const now = new Date().toISOString();
+  const uploadedImages = [];
+  
+  // Upload images
+  for (const img of images) {
+    if (img.file) {
+      try {
+        const base64Data = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(',')[1]);
+          reader.readAsDataURL(img.file);
+        });
 
-          const fileName = img.file.name.replace(/\s+/g, '-').toLowerCase();
-          const uploadRes = await fetch('/api/github?upload=true', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              file: base64Data,
-              path: `data/images/${fileName}`,
-              message: `Upload image ${fileName}`
-            }),
-          });
+        const fileName = img.file.name.replace(/\s+/g, '-').toLowerCase();
+        const uploadRes = await fetch('/api/github?upload=true', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            file: base64Data,
+            path: `data/images/${fileName}`,
+            message: `Upload image ${fileName}`
+          }),
+        });
 
-          if (uploadRes.ok) {
-            uploadedImages.push(`data/images/${fileName}`);
-          }
-        } catch (error) {
-          console.error('Upload error:', error);
+        if (uploadRes.ok) {
+          uploadedImages.push(`data/images/${fileName}`);
         }
-      } else if (img.url.trim() !== '') {
-        uploadedImages.push(img.url);
+      } catch (error) {
+        console.error('Upload error:', error);
       }
+    } else if (img.url.trim() !== '') {
+      uploadedImages.push(img.url);
     }
+  }
 
-    // Process information field to handle multiline and potential JSON
-    let processedInformation = information;
-    try {
-      // Try to parse as JSON if it looks like JSON
-      if (information.trim().startsWith('{') || information.trim().startsWith('[')) {
-        processedInformation = JSON.parse(information);
-      }
-    } catch (e) {
-      // If not JSON, keep as is with proper line breaks
+  // Process information field to handle special characters and emojis
+  let processedInformation = information;
+  try {
+    // Try to parse as JSON if it looks like JSON
+    if (information.trim().startsWith('{') || information.trim().startsWith('[')) {
+      processedInformation = JSON.parse(information);
+    } else {
+      // Handle as plain text with line breaks
       processedInformation = information.split('\n').filter(line => line.trim() !== '');
     }
+  } catch (e) {
+    // If parsing fails, keep as is
+    processedInformation = information;
+  }
 
-    const blockData = {
-      id: editingId || Date.now().toString(),
-      title: title,
-      steps: showSections.steps ? steps.filter(step => step.text.trim() !== '') : [],
-      information: showSections.information ? processedInformation : [],
-      tags: showSections.tags ? tags : [],
-      sourceLinks: showSections.sources ? sourceLinks.filter(link => link.trim() !== '') : [],
-      images: showSections.images ? uploadedImages : [],
-      visibility,
-      createdAt: editingId ? blocks.find(b => b.id === editingId)?.createdAt || now : now,
-      updatedAt: now
-    };
-
-    completeSave(blockData);
+  const blockData = {
+    id: editingId || Date.now().toString(),
+    title: title,
+    steps: showSections.steps ? steps.filter(step => step.text.trim() !== '') : [],
+    information: showSections.information ? processedInformation : [],
+    tags: showSections.tags ? tags : [],
+    sourceLinks: showSections.sources ? sourceLinks.filter(link => link.trim() !== '') : [],
+    images: showSections.images ? uploadedImages : [],
+    visibility,
+    createdAt: editingId ? blocks.find(b => b.id === editingId)?.createdAt || now : now,
+    updatedAt: now
   };
 
-  const completeSave = async (blockData) => {
-    const updatedBlocks = editingId
-      ? blocks.map(b => b.id === editingId ? blockData : b)
-      : [...blocks, blockData];
+  completeSave(blockData);
+};
 
-    try {
-      // Stringify with pretty print and UTF-8 encoding
-      const jsonContent = JSON.stringify(updatedBlocks, null, 2);
+const completeSave = async (blockData) => {
+  const updatedBlocks = editingId
+    ? blocks.map(b => b.id === editingId ? blockData : b)
+    : [...blocks, blockData];
 
-      const res = await fetch('/api/github', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          path: 'data/airdrop/data.json',
-          content: jsonContent, // Send as direct JSON string
-          message: editingId ? `Update block ${editingId}` : 'Add new block'
-        }),
-      });
+  try {
+    // Stringify with pretty print and UTF-8 support
+    const jsonContent = JSON.stringify(updatedBlocks, null, 2);
 
-      if (res.ok) {
-        setBlocks(updatedBlocks);
-        resetForm();
-        setMessage(`✅ Block ${editingId ? 'updated' : 'added'} successfully!`);
-      } else {
-        throw new Error('Failed to save data');
-      }
-    } catch (error) {
-      console.error('Error saving data:', error);
-      setMessage('❌ Failed to save data. Please try again.');
-    } finally {
-      setIsLoading(false);
+    const res = await fetch('/api/github', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        path: 'data/airdrop/data.json',
+        content: jsonContent,
+        message: editingId ? `Update block ${editingId}` : 'Add new block'
+      }),
+    });
+
+    if (res.ok) {
+      setBlocks(updatedBlocks);
+      resetForm();
+      setMessage(`✅ Block ${editingId ? 'updated' : 'added'} successfully!`);
+    } else {
+      const errorData = await res.json();
+      throw new Error(errorData.error || 'Failed to save data');
     }
-  };
+  } catch (error) {
+    console.error('Error saving data:', error);
+    setMessage(`❌ ${error.message}`);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // Update editBlock to handle information field properly
   const editBlock = (id) => {
-    const block = blocks.find(b => b.id === id);
-    if (block) {
-      setTitle(block.title);
-      setSteps(block.steps.length > 0 ? block.steps : [{ text: '', link: '' }]);
-      setImages(block.images?.length > 0 
-        ? block.images.map(img => ({ 
-            file: null, 
-            url: img.startsWith('http') ? img : getImageDisplayUrl(img)
-          }))
-        : [{ file: null, url: '' }]
-      );
-      
-      // Handle information field - if array, join with newlines; if object, stringify
-      let infoValue = '';
-      if (Array.isArray(block.information)) {
-        infoValue = block.information.join('\n');
-      } else if (typeof block.information === 'object' && block.information !== null) {
-        infoValue = JSON.stringify(block.information, null, 2);
-      } else {
-        infoValue = block.information || '';
-      }
-      setInformation(infoValue);
-      
-      setTags(block.tags || []);
-      setSourceLinks(block.sourceLinks?.length > 0 ? block.sourceLinks : ['']);
-      setVisibility(block.visibility || 'show');
-      setEditingId(id);
-      setShowSections({
-        title: true,
-        steps: block.steps.length > 0,
-        images: block.images?.length > 0,
-        information: block.information?.length > 0,
-        tags: block.tags?.length > 0,
-        sources: block.sourceLinks?.length > 0
-      });
+  const block = blocks.find(b => b.id === id);
+  if (block) {
+    setTitle(block.title);
+    setSteps(block.steps.length > 0 ? block.steps : [{ text: '', link: '' }]);
+    setImages(block.images?.length > 0 
+      ? block.images.map(img => ({ 
+          file: null, 
+          url: img.startsWith('http') ? img : getImageDisplayUrl(img)
+        }))
+      : [{ file: null, url: '' }]
+    );
+    
+    // Handle information field - if array, join with newlines; if object, stringify
+    let infoValue = '';
+    if (Array.isArray(block.information)) {
+      infoValue = block.information.join('\n');
+    } else if (typeof block.information === 'object' && block.information !== null) {
+      infoValue = JSON.stringify(block.information, null, 2);
+    } else {
+      infoValue = block.information || '';
     }
-  };
+    setInformation(infoValue);
+    
+    setTags(block.tags || []);
+    setSourceLinks(block.sourceLinks?.length > 0 ? block.sourceLinks : ['']);
+    setVisibility(block.visibility || 'show');
+    setEditingId(id);
+    setShowSections({
+      title: true,
+      steps: block.steps.length > 0,
+      images: block.images?.length > 0,
+      information: block.information?.length > 0,
+      tags: block.tags?.length > 0,
+      sources: block.sourceLinks?.length > 0
+    });
+  }
+};
 
   const deleteBlock = async (id) => {
     if (confirm('Are you sure you want to delete this block?')) {
