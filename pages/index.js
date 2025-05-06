@@ -47,11 +47,12 @@ export default function Home() {
         const blocksData = await blocksRes.json();
         if (blocksData.content) {
           try {
-            const decodedContent = decodeURIComponent(escape(atob(blocksData.content)));
-            setBlocks(JSON.parse(decodedContent));
+            // Directly parse the JSON content (no more base64 decoding)
+            const content = blocksData.content;
+            const parsedContent = typeof content === 'string' ? JSON.parse(content) : content;
+            setBlocks(parsedContent);
           } catch (parseError) {
             console.error('Error parsing blocks data:', parseError);
-            // Try to initialize with empty array if parse fails
             setBlocks([]);
           }
         } else {
@@ -65,11 +66,11 @@ export default function Home() {
         const tagsData = await tagsRes.json();
         if (tagsData.content) {
           try {
-            const decodedTags = decodeURIComponent(escape(atob(tagsData.content)));
-            setAllTags(JSON.parse(decodedTags));
+            // Directly parse the JSON content for tags
+            const tagsContent = typeof tagsData.content === 'string' ? JSON.parse(tagsData.content) : tagsData.content;
+            setAllTags(tagsContent);
           } catch (parseError) {
             console.error('Error parsing tags data:', parseError);
-            // Fallback to default tags if parse fails
             setAllTags(["daily", "WL", "retro", "testnet"]);
           }
         } else {
@@ -80,8 +81,6 @@ export default function Home() {
         console.error('Error loading data:', error);
         setLoadError(error.message);
         setMessage(`❌ ${error.message}`);
-        
-        // Initialize with empty data if loading fails
         setBlocks([]);
         setAllTags(["daily", "WL", "retro", "testnet"]);
       } finally {
@@ -96,7 +95,7 @@ export default function Home() {
       setMessage('❌ GitHub configuration missing');
     }
   }, []);
-
+  
   const getImageDisplayUrl = (imgPath) => {
     if (!imgPath) return '';
     if (imgPath.startsWith('http')) return imgPath;
@@ -238,7 +237,7 @@ const handleNextImage = (blockIndex) => {
     const now = new Date().toISOString();
     const uploadedImages = [];
     
-    // Upload all images
+    // Upload all images (keep this part the same)
     for (const img of images) {
       if (img.file) {
         try {
@@ -270,11 +269,23 @@ const handleNextImage = (blockIndex) => {
       }
     }
 
+    // Process information field to handle multiline and potential JSON
+    let processedInformation = information;
+    try {
+      // Try to parse as JSON if it looks like JSON
+      if (information.trim().startsWith('{') || information.trim().startsWith('[')) {
+        processedInformation = JSON.parse(information);
+      }
+    } catch (e) {
+      // If not JSON, keep as is with proper line breaks
+      processedInformation = information.split('\n').filter(line => line.trim() !== '');
+    }
+
     const blockData = {
       id: editingId || Date.now().toString(),
       title: title,
       steps: showSections.steps ? steps.filter(step => step.text.trim() !== '') : [],
-      information: showSections.information ? information.split('\n').filter(line => line.trim() !== '') : [],
+      information: showSections.information ? processedInformation : [],
       tags: showSections.tags ? tags : [],
       sourceLinks: showSections.sources ? sourceLinks.filter(link => link.trim() !== '') : [],
       images: showSections.images ? uploadedImages : [],
@@ -292,16 +303,15 @@ const handleNextImage = (blockIndex) => {
       : [...blocks, blockData];
 
     try {
+      // Stringify with pretty print and UTF-8 encoding
       const jsonContent = JSON.stringify(updatedBlocks, null, 2);
-      const utf8Content = unescape(encodeURIComponent(jsonContent));
-      const base64Content = btoa(utf8Content);
 
       const res = await fetch('/api/github', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           path: 'data/airdrop/data.json',
-          content: base64Content,
+          content: jsonContent, // Send as direct JSON string
           message: editingId ? `Update block ${editingId}` : 'Add new block'
         }),
       });
@@ -321,25 +331,7 @@ const handleNextImage = (blockIndex) => {
     }
   };
 
-  const resetForm = () => {
-    setTitle('');
-    setSteps([{ text: '', link: '' }]);
-    setImages([{ file: null, url: '' }]);
-    setInformation('');
-    setTags([]);
-    setSourceLinks(['']);
-    setVisibility('show');
-    setEditingId(null);
-    setShowSections({
-      title: true,
-      steps: false,
-      images: false,
-      information: false,
-      tags: false,
-      sources: false
-    });
-  };
-
+  // Update editBlock to handle information field properly
   const editBlock = (id) => {
     const block = blocks.find(b => b.id === id);
     if (block) {
@@ -352,7 +344,18 @@ const handleNextImage = (blockIndex) => {
           }))
         : [{ file: null, url: '' }]
       );
-      setInformation(block.information?.join('\n') || '');
+      
+      // Handle information field - if array, join with newlines; if object, stringify
+      let infoValue = '';
+      if (Array.isArray(block.information)) {
+        infoValue = block.information.join('\n');
+      } else if (typeof block.information === 'object' && block.information !== null) {
+        infoValue = JSON.stringify(block.information, null, 2);
+      } else {
+        infoValue = block.information || '';
+      }
+      setInformation(infoValue);
+      
       setTags(block.tags || []);
       setSourceLinks(block.sourceLinks?.length > 0 ? block.sourceLinks : ['']);
       setVisibility(block.visibility || 'show');
@@ -973,13 +976,22 @@ const handleNextImage = (blockIndex) => {
                   )}
 
                   {block.information?.length > 0 && (
-                    <div className={styles.additionalInfo}>
-                      <h4>Information:</h4>
-                      {block.information.map((line, i) => (
-                        <p key={i}>{line}</p>
-                      ))}
-                    </div>
-                  )}
+    <div className={styles.additionalInfo}>
+      <h4>Information:</h4>
+      {Array.isArray(block.information) ? (
+        block.information.map((line, i) => (
+          <p key={i}>{line}</p>
+        ))
+      ) : (
+        <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+          {typeof block.information === 'object' 
+            ? JSON.stringify(block.information, null, 2)
+            : block.information}
+        </pre>
+      )}
+    </div>
+  )}
+}
 
                   {block.tags?.length > 0 && (
                     <div className={styles.itemTags}>
