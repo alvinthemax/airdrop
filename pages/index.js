@@ -158,6 +158,18 @@ export default function Home() {
     }
   };
 
+// left right arrow buttons
+const handleNext = () => {
+  if (images.length <= 1) return; // Hanya 1 gambar, tidak perlu navigasi
+  setCurrentIndex((prev) => (prev + 1) % images.length);
+};
+
+const handlePrev = () => {
+  if (images.length <= 1) return;
+  setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+};
+
+
   // Sources management
   const addSourceLink = () => setSourceLinks([...sourceLinks, '']);
   const removeSourceLink = (index) => {
