@@ -1,0 +1,4931 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mission Board</title>
+
+<style>
+:root {
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --border: #e2e6f0;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --accent: #4f46e5;
+  --success: #22c55e;
+  --highlight: #fde68a;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --interval: #3b82f6;
+  --clip-bg: #f0fdf4;
+  --clip-border: #bbf7d0;
+  --table-bg: #eef2ff;
+  --table-text: #4f46e5;
+  --github: #24292e;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  padding: 16px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text);
+}
+
+/* === Mission Board === */
+.container {
+  width: 100%;
+  max-width: 420px;
+  background: var(--card);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.settings-btn {
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.settings-btn:hover {
+  background: var(--bg);
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.2s;
+  position: relative;
+}
+
+.tab:hover {
+  background: var(--bg);
+}
+
+.tab.active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+}
+
+.content {
+  padding: 16px;
+  min-height: 200px;
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Mission Card - FIXED: Prevent overlay with checkbox */
+.mission-card {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 50px 14px 42px; /* Increased left padding to accommodate checkbox */
+  margin-bottom: 10px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.mission-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.1);
+}
+
+.mission-card.done {
+  border: 2px solid var(--success);
+  background: #f0fdf4;
+}
+
+.mission-card.pending {
+  border: 2px solid var(--warning);
+  background: #fffbeb;
+}
+
+.mission-card input[type="checkbox"] {
+  position: absolute;
+  top: 14px;
+  left: 12px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  z-index: 1; /* Ensure checkbox is above other elements */
+}
+
+/* Mission title container */
+.mission-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.mission-title {
+  font-size: 13px;
+  color: var(--table-text);
+  background: var(--table-bg);
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-block;
+  font-weight: 500;
+  transition: all 0.2s;
+  border: 1px solid var(--accent);
+  cursor: pointer;
+  max-width: calc(100% - 40px); /* Prevent overlapping with buttons */
+}
+
+.mission-title:hover {
+  background: var(--accent);
+  color: white;
+}
+
+.mission-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.mission-fullsize-btn,
+.remove-mission-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.mission-fullsize-btn:hover {
+  background: #e0f2fe;
+  color: var(--accent);
+}
+
+.remove-mission-btn:hover {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+.mission-card p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  padding-right: 10px;
+}
+
+.mission-card .item-info {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mission-card .item-info .next-reset {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.mission-id {
+  font-family: monospace;
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  display: inline-block;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mission-id:hover {
+  background: var(--accent);
+  color: white;
+}
+
+.log {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  padding: 8px;
+  background: var(--bg);
+  border-radius: 6px;
+}
+
+/* === Table Section === */
+.table-section {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 20px;
+}
+
+.add-table-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: var(--card);
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--accent);
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+
+.add-table-btn:hover {
+  background: #eef2ff;
+  border-color: var(--accent);
+}
+
+/* Search Bar */
+.search-container {
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px;
+  padding-right: 40px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  background: var(--card);
+  color: var(--text);
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 18px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.search-clear-btn:hover {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+.tables-container {
+  position: relative;
+  width: 100%;
+}
+
+.tables {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 14px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  width: 100%;
+}
+
+.tables::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tables::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tables::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+/* Fixed table card width - not exceeding viewport */
+.table-card {
+  width: calc(100vw - 32px);
+  max-width: 420px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  max-height: 500px;
+  overflow-y: auto;
+  transition: all 0.3s;
+}
+
+.table-card.highlighted {
+  border: 2px solid var(--accent);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+  animation: pulse 1.5s ease-in-out;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15); }
+  50% { box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3); }
+  100% { box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15); }
+}
+
+.table-header {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 1;
+}
+
+.table-title {
+  flex: 1;
+}
+
+.table-title-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.edit-table-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-table-btn:hover {
+  color: var(--accent);
+  background: #eef2ff;
+}
+
+.delete-table-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-table-btn:hover {
+  color: var(--danger);
+  background: #fee2e2;
+}
+
+.table-content {
+  flex: 1;
+  margin-bottom: 12px;
+  overflow-y: auto;
+}
+
+/* Table Footer */
+.table-footer {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  margin-top: auto;
+}
+
+.add-item-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  background: var(--bg);
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.add-item-btn:hover {
+  background: #eef2ff;
+  border-color: var(--accent);
+}
+
+/* List Item Style */
+.list-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+}
+
+.list-item:hover {
+  border-color: var(--accent);
+}
+
+.list-item.sorot {
+  border: 2px solid var(--accent);
+  background: #eef2ff;
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.item-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.item-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.edit-item-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-item-btn:hover {
+  color: var(--accent);
+  background: #eef2ff;
+}
+
+.delete-item-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-item-btn:hover {
+  color: var(--danger);
+  background: #fee2e2;
+}
+
+/* Links Container with Wrapper */
+.links-container {
+  margin-top: 8px;
+}
+
+.clips-container {
+  margin-top: 8px;
+}
+
+.link-header,
+.clip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.toggle-links-btn,
+.toggle-clips-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.toggle-links-btn:hover,
+.toggle-clips-btn:hover {
+  background: var(--bg);
+}
+
+/* Links Wrapper for Long URLs */
+.links-wrapper,
+.clips-wrapper {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.links-list,
+.clips-list {
+  display: none;
+  width: 100%;
+}
+
+.links-list.show,
+.clips-list.show {
+  display: block;
+}
+
+.links-list.horizontal {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+  padding-bottom: 4px;
+}
+
+.links-list.horizontal::-webkit-scrollbar {
+  height: 3px;
+}
+
+/* Link Item with horizontal scroll for long URLs */
+.link-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background: var(--bg);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  gap: 8px;
+  width: 100%;
+}
+
+.link-item.horizontal {
+  min-width: 180px;
+  flex-shrink: 0;
+}
+
+/* Clip Item Style */
+.clip-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background: var(--clip-bg);
+  border: 1px solid var(--clip-border);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  width: 100%;
+}
+
+.clip-content {
+  flex: 1;
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--text);
+  word-break: break-all;
+  padding: 2px 0;
+}
+
+.clip-copy {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.clip-copy:hover {
+  background: var(--clip-border);
+}
+
+.link-url-wrapper {
+  flex: 1;
+  overflow: hidden;
+  min-width: 0; /* Important for text overflow */
+}
+
+.link-url {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+.link-url::-webkit-scrollbar {
+  height: 2px;
+}
+
+.link-url::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.link-url::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 1px;
+}
+
+.link-open {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.link-open:hover {
+  background: var(--bg);
+  text-decoration: underline;
+}
+
+/* Sorot Button - FIXED LOGIC */
+.sorot-btn {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  background: var(--card);
+  color: var(--text);
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 70px;
+}
+
+.sorot-btn:hover {
+  background: var(--bg);
+}
+
+.sorot-btn.sorot-active {
+  background: var(--danger);
+  color: white;
+  border-color: var(--danger);
+}
+
+.sorot-btn.pending {
+  background: var(--warning);
+  color: white;
+  border-color: var(--warning);
+}
+
+.sorot-btn.interval {
+  background: var(--interval);
+  color: white;
+  border-color: var(--interval);
+}
+
+.sorot-btn.interval:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.empty-table-state {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--muted);
+  font-size: 14px;
+  background: var(--bg);
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 16px;
+  display: none;
+}
+
+.modal {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 20px;
+  width: 100%;
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 24px;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.close-modal:hover {
+  background: var(--bg);
+  color: var(--danger);
+}
+
+.modal-footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-footer .cancel-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.modal-footer .cancel-btn:hover {
+  background: var(--bg);
+}
+
+.modal-footer .save-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.modal-footer .save-btn:hover {
+  background: #4338ca;
+  border-color: #4338ca;
+}
+
+/* Modal untuk Sorot Options */
+.sorot-options-modal .modal {
+  max-width: 350px;
+}
+
+.sorot-type-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sorot-type-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.sorot-type-btn:hover {
+  background: var(--bg);
+}
+
+.sorot-type-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.interval-settings {
+  display: none;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.reset-time-options {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.reset-time-options h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.reset-time-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.reset-time-option:hover {
+  background: var(--card);
+}
+
+.reset-time-option input[type="radio"] {
+  margin: 0;
+}
+
+.reset-time-option label {
+  flex: 1;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.reset-time-option .option-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.reset-time-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--bg);
+  border-radius: 6px;
+  border-left: 3px solid var(--warning);
+}
+
+.interval-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.interval-input {
+  flex: 1;
+}
+
+.interval-unit {
+  flex: 1;
+}
+
+.interval-unit select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+}
+
+.reset-time-row {
+  display: none;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.reset-time-label {
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.reset-time-input {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+}
+
+.reset-time-input input {
+  width: 46px;
+  padding: 8px 4px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.reset-time-colon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text);
+  width: 8px;
+}
+
+/* Edit Item Modal Styles */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.required::after {
+  content: " *";
+  color: var(--danger);
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--card);
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.textarea-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--card);
+  color: var(--text);
+  transition: border-color 0.2s;
+  font-family: monospace;
+  min-height: 60px;
+  resize: vertical;
+}
+
+.textarea-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.link-input-group,
+.clip-input-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: flex-start;
+}
+
+.link-input-group input,
+.clip-input-group textarea {
+  flex: 1;
+}
+
+.remove-link-btn,
+.remove-clip-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+  margin-top: 10px;
+}
+
+.remove-link-btn:hover,
+.remove-clip-btn:hover {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+.add-link-btn,
+.add-clip-btn {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.add-link-btn:hover,
+.add-clip-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #eef2ff;
+}
+
+/* Add Items Modal Styles */
+.add-items-modal .modal {
+  max-width: 420px;
+}
+
+.item-data-group {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  position: relative;
+}
+
+.item-data-group:last-child {
+  margin-bottom: 0;
+}
+
+.remove-item-data-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #fee2e2;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  z-index: 1;
+}
+
+.remove-item-data-btn:hover {
+  background: var(--danger);
+  color: white;
+}
+
+.item-data-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.item-data-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.item-data-index {
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--card);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.links-container-small,
+.clips-container-small {
+  margin-top: 12px;
+}
+
+.add-link-btn-small,
+.add-clip-btn-small {
+  width: 100%;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px dashed var(--border);
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.add-link-btn-small:hover,
+.add-clip-btn-small:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #eef2ff;
+}
+
+.add-item-data-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.add-item-data-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #eef2ff;
+}
+
+/* Settings Modal Styles */
+.settings-modal .modal {
+  max-width: 420px;
+}
+
+.settings-group {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-group:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.settings-group h4 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.settings-row {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-row label {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.settings-row select,
+.settings-row input {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--card);
+  color: var(--text);
+  width: 100%;
+}
+
+.settings-row input[type="password"] {
+  font-family: monospace;
+}
+
+.export-import-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.export-btn,
+.import-btn,
+.reset-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.export-btn {
+  background: var(--accent);
+  color: white;
+}
+
+.export-btn:hover {
+  background: #4338ca;
+}
+
+.import-btn {
+  background: var(--success);
+  color: white;
+}
+
+.import-btn:hover {
+  background: #16a34a;
+}
+
+.reset-btn {
+  background: var(--danger);
+  color: white;
+}
+
+.reset-btn:hover {
+  background: #dc2626;
+}
+
+.github-btn {
+  background: var(--github);
+  color: white;
+}
+
+.github-btn:hover {
+  background: #000;
+}
+
+.file-input-wrapper {
+  position: relative;
+  margin-top: 8px;
+}
+
+.file-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-input-label {
+  display: block;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.file-input-label:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #eef2ff;
+}
+
+/* Github Configuration Styles */
+.github-config {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 12px;
+  border: 1px solid var(--border);
+}
+
+.github-config.hidden {
+  display: none;
+}
+
+.github-info {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid var(--github);
+}
+
+.github-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.github-export-btn,
+.github-import-btn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.github-export-btn {
+  background: var(--github);
+  color: white;
+}
+
+.github-export-btn:hover {
+  background: #000;
+}
+
+.github-import-btn {
+  background: var(--success);
+  color: white;
+}
+
+.github-import-btn:hover {
+  background: #16a34a;
+}
+
+.github-status {
+  margin-top: 12px;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  display: none;
+}
+
+.github-status.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  display: block;
+}
+
+.github-status.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  display: block;
+}
+
+.github-status.loading {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+  display: block;
+}
+
+/* Full Size Modal Styles */
+.fullsize-modal .modal {
+  max-width: 500px;
+  max-height: 85vh;
+}
+
+.property-display {
+  margin-bottom: 16px;
+}
+
+.property-value-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.property-value {
+  flex: 1;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  word-break: break-all;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.copy-property-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.copy-property-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Link items in fullsize modal */
+.fullsize-link-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: var(--bg);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.fullsize-link-url {
+  flex: 1;
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--text);
+  word-break: break-all;
+  padding: 2px 0;
+}
+
+.fullsize-link-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.fullsize-copy-link-btn,
+.fullsize-open-link-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fullsize-copy-link-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.fullsize-open-link-btn:hover {
+  background: var(--success);
+  color: white;
+  border-color: var(--success);
+  text-decoration: none;
+}
+
+/* Clip items in fullsize modal */
+.fullsize-clip-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: var(--clip-bg);
+  border: 1px solid var(--clip-border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.fullsize-clip-content {
+  flex: 1;
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--text);
+  word-break: break-all;
+  padding: 2px 0;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.fullsize-copy-clip-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--clip-border);
+  background: var(--clip-bg);
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.fullsize-copy-clip-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.form-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- Mission Board -->
+<div class="container">
+  <div class="header">
+    <h2>Mission Board</h2>
+    <div class="settings-btn" title="Pengaturan">⚙️</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="misi">Misi</div>
+    <div class="tab" data-tab="selesai">Selesai</div>
+    <div class="tab" data-tab="log">Log</div>
+  </div>
+
+  <div class="content">
+    <div class="tab-content active" id="misi">
+      <!-- Missions will be rendered here -->
+    </div>
+    <div class="tab-content" id="selesai">
+      <!-- Completed missions will be rendered here -->
+    </div>
+    <div class="tab-content" id="log">
+      <!-- Logs will be rendered here -->
+    </div>
+  </div>
+</div>
+
+<!-- Table Section -->
+<div class="table-section">
+  <button class="add-table-btn" id="addTableBtn">+ Tambah Tabel</button>
+  
+  <!-- Search Bar -->
+  <div class="search-container">
+    <input type="text" class="search-input" id="searchInput" placeholder="Cari tabel, item, atau ID...">
+    <button class="search-clear-btn" id="searchClearBtn">×</button>
+  </div>
+
+  <div class="tables" id="tables"></div>
+</div>
+
+<!-- Modal untuk Sorot Options -->
+<div class="modal-overlay sorot-options-modal" id="sorotOptionsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="sorotModalTitle">Pilih Jenis Sorot</h3>
+      <button class="close-modal" id="closeSorotModal">×</button>
+    </div>
+    
+    <div class="sorot-type-buttons">
+      <button class="sorot-type-btn active" data-type="sekali">Sekali</button>
+      <button class="sorot-type-btn" data-type="berulang">Berulang</button>
+    </div>
+    
+    <div class="interval-settings" id="intervalSettings">
+      <div style="margin-bottom: 12px; font-size: 14px; color: var(--text);">
+        Tambahkan kembali ke tab "Misi" pending setiap:
+      </div>
+      
+      <div class="interval-row">
+        <div class="interval-input">
+          <input type="number" id="intervalValue" min="1" value="1" placeholder="Interval">
+        </div>
+        <div class="interval-unit">
+          <select id="intervalUnit">
+            <option value="hours">Jam</option>
+            <option value="days" selected>Hari</option>
+            <option value="weeks">Minggu</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Waktu Reset (hanya untuk hari dan minggu) -->
+      <div class="reset-time-row" id="resetTimeRow">
+        <span class="reset-time-label">Waktu Reset:</span>
+        <div class="reset-time-input">
+          <input type="text" id="resetHour" maxlength="2" placeholder="00" value="19" pattern="[0-9]*" inputmode="numeric">
+          <span class="reset-time-colon">:</span>
+          <input type="text" id="resetMinute" maxlength="2" placeholder="00" value="00" pattern="[0-9]*" inputmode="numeric">
+        </div>
+        <select id="resetTimezone">
+          <option value="WIB">WIB</option>
+          <option value="UTC">UTC</option>
+        </select>
+      </div>
+      
+      <div id="resetTimeNote" style="display: none; font-size: 12px; color: var(--muted); margin-top: 8px;">
+        *Jika melewati pukul (xx:xx) maka dianggap sudah 1 hari penuh.
+      </div>
+      
+      <!-- Opsi Khusus untuk Jam -->
+      <div class="reset-time-options" id="intervalJamOptions" style="display: none;">
+        <h4>Hitung mundur dimulai:</h4>
+        <div class="reset-time-option">
+          <input type="radio" id="intervalJamStartOption1" name="intervalJamStart" value="after_sorot" checked>
+          <div>
+            <label for="intervalJamStartOption1">Setelah disorot</label>
+            <div class="option-desc">e.g input 1 jam disorot pada 10.00 WIB, reset berikutnya 11.00 WIB, 12.00 WIB</div>
+          </div>
+        </div>
+        <div class="reset-time-option">
+          <input type="radio" id="intervalJamStartOption2" name="intervalJamStart" value="after_done">
+          <div>
+            <label for="intervalJamStartOption2">Setelah diselesaikan</label>
+            <div class="option-desc">e.g input 1 jam disorot pada 10.00 WIB dan dicentang pada 10.33 WIB, reset berikutnya 11.33 WIB dan tunggu misi diselesaikan untuk reset seterusnya</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Opsi Reset untuk Hari/Minggu -->
+      <div class="reset-time-options" id="intervalDayWeekOptions">
+        <h4>Hitung mundur dimulai:</h4>
+        <div class="reset-time-option">
+          <input type="radio" id="resetOptionFlexible" name="resetOption" value="flexible" checked>
+          <div>
+            <label for="resetOptionFlexible">Setelah diselesaikan</label>
+            <div class="option-desc">Hitung mundur dimulai setelah misi diselesaikan/dicentang</div>
+          </div>
+        </div>
+        <div class="reset-time-option">
+          <input type="radio" id="resetOptionFixed" name="resetOption" value="fixed">
+          <div>
+            <label for="resetOptionFixed">Setelah disorot</label>
+            <div class="option-desc">Hitung mundur dimulai setelah misi disorot</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="cancel-btn" id="cancelSorotBtn">Batal</button>
+      <button class="save-btn" id="saveSorotBtn">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal untuk Edit Item Data -->
+<div class="modal-overlay" id="editItemModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Edit Item Data</h3>
+      <button class="close-modal" id="closeEditItemModal">×</button>
+    </div>
+    
+    <div class="modal-content">
+      <div class="form-group">
+        <label class="form-label required" for="itemNameInput">Nama:</label>
+        <input type="text" id="itemNameInput" class="form-input" placeholder="Masukkan nama item" required>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Links:</label>
+        <div id="linksContainer">
+          <!-- Link inputs will be added here dynamically -->
+        </div>
+        <button type="button" class="add-link-btn" id="addLinkBtn">+ 1 Link</button>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Klips:</label>
+        <div id="clipsContainer">
+          <!-- Clip inputs will be added here dynamically -->
+        </div>
+        <button type="button" class="add-clip-btn" id="addClipBtnEdit">+ 1 Klip</button>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="cancel-btn" id="cancelEditItemBtn">Batal</button>
+      <button class="save-btn" id="saveEditItemBtn">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal untuk Edit Judul Tabel -->
+<div class="modal-overlay" id="editTableTitleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Edit Judul Tabel</h3>
+      <button class="close-modal" id="closeEditTableTitleModal">×</button>
+    </div>
+    
+    <div class="modal-content">
+      <div class="form-group">
+        <label class="form-label required" for="tableTitleInput">Judul Tabel:</label>
+        <input type="text" id="tableTitleInput" class="form-input" placeholder="Masukkan judul tabel" required>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="cancel-btn" id="cancelEditTableTitleBtn">Batal</button>
+      <button class="save-btn" id="saveEditTableTitleBtn">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal untuk Tambah Item Data -->
+<div class="modal-overlay add-items-modal" id="addItemsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Tambah Item Data</h3>
+      <button class="close-modal" id="closeAddItemsModal">×</button>
+    </div>
+    
+    <div class="modal-content">
+      <div id="itemDataGroupsContainer">
+        <!-- Item Data groups will be added here dynamically -->
+      </div>
+      
+      <button type="button" class="add-item-data-btn" id="addItemDataBtn">
+        + 1 Item Data
+      </button>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="cancel-btn" id="cancelAddItemsBtn">Batal</button>
+      <button class="save-btn" id="saveAddItemsBtn">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal untuk Pengaturan (Main) -->
+<div class="modal-overlay settings-modal" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Pengaturan</h3>
+      <button class="close-modal" id="closeSettingsModal">×</button>
+    </div>
+    
+    <div class="modal-content">
+      <div class="settings-group">
+        <h4>Zona Waktu Mission Board</h4>
+        <div class="settings-row">
+          <label for="timezoneSelect">Zona Waktu:</label>
+          <select id="timezoneSelect">
+            <option value="WIB" selected>WIB (UTC+7)</option>
+            <option value="UTC">UTC</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="settings-group">
+        <h4>Manajemen Data Lokal</h4>
+        <div class="settings-row">
+          <p style="margin: 0 0 8px; font-size: 13px; color: var(--muted);">Ekspor dan impor data tabel ke/dari file JSON</p>
+          <div class="export-import-buttons">
+            <button class="export-btn" id="exportDataBtn">
+              <span>📥</span> Ekspor
+            </button>
+            <button class="import-btn" id="importDataBtn">
+              <span>📤</span> Impor
+            </button>
+          </div>
+          <div class="file-input-wrapper" id="fileInputWrapper" style="display: none;">
+            <input type="file" id="importFileInput" class="file-input" accept=".json">
+            <label for="importFileInput" class="file-input-label">Pilih file JSON...</label>
+          </div>
+        </div>
+      </div>
+      
+      <div class="settings-group">
+        <h4>GitHub Integration</h4>
+        <div class="settings-row">
+          <p style="margin: 0 0 8px; font-size: 13px; color: var(--muted);">Sinkronkan data dengan GitHub (Public/Private)</p>
+          <button class="github-btn" id="toggleGithubConfigBtn">
+            <span>🐙</span> Konfigurasi GitHub
+          </button>
+        </div>
+        
+        <div class="github-config hidden" id="githubConfig">
+          <div class="settings-row">
+            <label for="githubToken">Personal Access Token:</label>
+            <input type="password" id="githubToken" class="form-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+            <div class="form-hint">Token dengan repo permission (public_repo untuk public, repo untuk private)</div>
+          </div>
+          
+          <div class="settings-row">
+            <label for="githubRepo">Repository:</label>
+            <input type="text" id="githubRepo" class="form-input" placeholder="username/repo-name">
+            <div class="form-hint">Format: username/repo-name (contoh: octocat/Hello-World)</div>
+          </div>
+          
+          <div class="settings-row">
+            <label for="githubPath">Path File:</label>
+            <input type="text" id="githubPath" class="form-input" placeholder="storage/data.json">
+            <div class="form-hint">Path file JSON di repo (contoh: data/mission-board.json)</div>
+          </div>
+          
+          <div class="settings-row">
+            <label for="githubBranch">Branch:</label>
+            <input type="text" id="githubBranch" class="form-input" placeholder="main" value="main">
+            <div class="form-hint">Nama branch (default: main)</div>
+          </div>
+          
+          <div class="github-info">
+            <strong>Catatan:</strong> Data akan di-overwrite jika file sudah ada, atau dibuat baru jika belum ada. Sistem akan otomatis mendapatkan SHA untuk update.
+          </div>
+          
+          <div class="github-actions">
+            <button class="github-export-btn" id="githubExportBtn">
+              <span>📤</span> Ekspor ke GitHub
+            </button>
+            <button class="github-import-btn" id="githubImportBtn">
+              <span>📥</span> Impor dari GitHub
+            </button>
+          </div>
+          
+          <div id="githubStatus" class="github-status"></div>
+        </div>
+      </div>
+      
+      <div class="settings-group">
+        <h4>Reset Data</h4>
+        <div class="settings-row">
+          <p style="margin: 0 0 8px; font-size: 13px; color: var(--danger);">Hati-hati! Aksi ini tidak dapat dibatalkan</p>
+          <button class="reset-btn" id="resetDataBtn">
+            <span>🗑️</span> Reset Semua Data
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="cancel-btn" id="closeSettingsFooterBtn">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal untuk Full Size Item View -->
+<div class="modal-overlay fullsize-modal" id="fullsizeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="fullsizeModalTitle">Detail Item</h3>
+      <button class="close-modal" id="closeFullsizeModal">×</button>
+    </div>
+    
+    <div class="modal-content">
+      <div class="form-group">
+        <div class="property-display">
+          <label class="form-label">ID Item:</label>
+          <div class="property-value-wrapper">
+            <div class="property-value" id="fullsizeItemId">-</div>
+            <button class="copy-property-btn" data-target="fullsizeItemId" title="Salin">
+              📋
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="property-display">
+          <label class="form-label">Judul Tabel:</label>
+          <div class="property-value-wrapper">
+            <div class="property-value" id="fullsizeTableTitle">-</div>
+            <button class="copy-property-btn" data-target="fullsizeTableTitle" title="Salin">
+              📋
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <div class="property-display">
+          <label class="form-label">Nama Item:</label>
+          <div class="property-value-wrapper">
+            <div class="property-value" id="fullsizeItemName">-</div>
+            <button class="copy-property-btn" data-target="fullsizeItemName" title="Salin">
+              📋
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Links:</label>
+        <div id="fullsizeLinksContainer">
+          <!-- Links will be added here dynamically -->
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Klips:</label>
+        <div id="fullsizeClipsContainer">
+          <!-- Clips will be added here dynamically -->
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Catatan:</label>
+        <textarea 
+          class="textarea-input" 
+          id="fullsizeNotes" 
+          placeholder="Tambahkan catatan sederhana untuk item ini..."
+          rows="4"
+        ></textarea>
+        <div class="form-hint">
+          Catatan disimpan secara otomatis di localStorage
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="cancel-btn" id="closeFullsizeFooterBtn">Tutup</button>
+    </div>
+  </div>
+</div>
+<script>
+// ===== Global Variables =====
+let missions = [];
+let tablesData = [];
+let searchQuery = '';
+let highlightedTableIndex = null;
+let highlightTimeout = null;
+let currentTableIndex = null;
+let currentItemIndex = null;
+let currentSorotType = 'sekali';
+let editingMissionId = null;
+let editingItemData = null;
+let editingTableIndex = null;
+let addingToTableIndex = null;
+
+// DOM Elements
+const misiBox = document.getElementById('misi');
+const selesaiBox = document.getElementById('selesai');
+const logBox = document.getElementById('log');
+const tablesBox = document.getElementById('tables');
+const addTableBtn = document.getElementById('addTableBtn');
+const searchInput = document.getElementById('searchInput');
+const searchClearBtn = document.getElementById('searchClearBtn');
+const sorotOptionsModal = document.getElementById('sorotOptionsModal');
+const editItemModal = document.getElementById('editItemModal');
+const editTableTitleModal = document.getElementById('editTableTitleModal');
+const addItemsModal = document.getElementById('addItemsModal');
+const settingsModal = document.getElementById('settingsModal');
+const fullsizeModal = document.getElementById('fullsizeModal');
+const intervalUnitSelect = document.getElementById('intervalUnit');
+const resetTimeRow = document.getElementById('resetTimeRow');
+const resetTimeOptions = document.getElementById('intervalDayWeekOptions');
+const intervalJamOptions = document.getElementById('intervalJamOptions');
+const resetTimeNote = document.getElementById('resetTimeNote');
+const resetHourInput = document.getElementById('resetHour');
+const resetMinuteInput = document.getElementById('resetMinute');
+const resetOptionFlexible = document.getElementById('resetOptionFlexible');
+const resetOptionFixed = document.getElementById('resetOptionFixed');
+const linksContainer = document.getElementById('linksContainer');
+const clipsContainer = document.getElementById('clipsContainer');
+const addLinkBtn = document.getElementById('addLinkBtn');
+const addClipBtnEdit = document.getElementById('addClipBtnEdit');
+const itemNameInput = document.getElementById('itemNameInput');
+const tableTitleInput = document.getElementById('tableTitleInput');
+const itemDataGroupsContainer = document.getElementById('itemDataGroupsContainer');
+const addItemDataBtn = document.getElementById('addItemDataBtn');
+const timezoneSelect = document.getElementById('timezoneSelect');
+const exportDataBtn = document.getElementById('exportDataBtn');
+const importDataBtn = document.getElementById('importDataBtn');
+const importFileInput = document.getElementById('importFileInput');
+const fileInputWrapper = document.getElementById('fileInputWrapper');
+const resetDataBtn = document.getElementById('resetDataBtn');
+const closeFullsizeModalBtn = document.getElementById('closeFullsizeModal');
+const closeFullsizeFooterBtn = document.getElementById('closeFullsizeFooterBtn');
+const toggleGithubConfigBtn = document.getElementById('toggleGithubConfigBtn');
+const githubConfig = document.getElementById('githubConfig');
+const githubToken = document.getElementById('githubToken');
+const githubRepo = document.getElementById('githubRepo');
+const githubPath = document.getElementById('githubPath');
+const githubBranch = document.getElementById('githubBranch');
+const githubExportBtn = document.getElementById('githubExportBtn');
+const githubImportBtn = document.getElementById('githubImportBtn');
+const githubStatus = document.getElementById('githubStatus');
+
+// ===== FUNGSI UTAMA: Reset Interval System =====
+function getCurrentTime() {
+  const now = new Date();
+  const timezone = timezoneSelect.value;
+  
+  if (timezone === 'UTC') {
+    return now.toUTCString().slice(17, 22) + ' UTC';
+  } else {
+    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const wibTime = new Date(utcTime + (7 * 60 * 60000));
+    return wibTime.toLocaleTimeString('id-ID', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    }) + ' WIB';
+  }
+}
+
+function getCurrentDateTime(timezone = null) {
+  const now = new Date();
+  const tz = timezone || timezoneSelect.value;
+  
+  if (tz === 'UTC') {
+    return now.toISOString();
+  } else {
+    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const wibTime = new Date(utcTime + (7 * 60 * 60000));
+    return wibTime.toISOString();
+  }
+}
+
+// ===== FUNGSI BANTU: Konversi Timezone =====
+function getUTCTimeForWIB(wibHours, wibMinutes) {
+  // WIB = UTC+7 → UTC = WIB-7
+  let utcHours = wibHours - 7;
+  if (utcHours < 0) {
+    utcHours += 24;
+  }
+  return { utcHours, minutes: wibMinutes };
+}
+
+function getWIBTimeFromUTC(utcHours, utcMinutes) {
+  // UTC → WIB: UTC+7
+  let wibHours = utcHours + 7;
+  if (wibHours >= 24) {
+    wibHours -= 24;
+  }
+  return { wibHours, minutes: utcMinutes };
+}
+
+// ===== FUNGSI UTAMA: Calculate Next Reset =====
+function calculateNextReset(mission) {
+  if (!mission.interval) return null;
+  
+  const now = new Date();
+  const timezone = mission.interval.timezone || 'WIB';
+  
+  let referenceTime;
+  if (mission.interval.resetOption === 'fixed') {
+    // FIXED: Mulai dari waktu pertama kali disorot (createdAt)
+    referenceTime = new Date(mission.createdAt);
+  } else {
+    // FLEXIBLE: Mulai dari waktu terakhir diselesaikan (lastReset)
+    // Jika belum pernah diselesaikan, gunakan waktu disorot
+    referenceTime = new Date(mission.lastReset || mission.createdAt);
+  }
+  
+  // Interval dalam milidetik
+  const intervalMs = mission.interval.value * {
+    'hours': 60 * 60 * 1000,
+    'days': 24 * 60 * 60 * 1000,
+    'weeks': 7 * 24 * 60 * 60 * 1000
+  }[mission.interval.unit];
+  
+  // KASUS 1: Interval Jam
+  if (mission.interval.unit === 'hours') {
+    let nextReset = new Date(referenceTime.getTime() + intervalMs);
+    
+    // Untuk FIXED reset (Setelah disorot)
+    if (mission.interval.resetOption === 'fixed') {
+      // e.g input 1 jam, disorot pada jam 10.33 WIB maka akan kembali pada 11.33 WIB, 12.33 WIB, dst
+      // TANPA peduli kapan item diselesaikan
+      while (nextReset <= now) {
+        nextReset = new Date(nextReset.getTime() + intervalMs);
+      }
+    } else {
+      // Untuk FLEXIBLE (Setelah diselesaikan)
+      // e.g input 1 jam, disorot pada jam 10.33 WIB dan diselesaikan pada jam 10.45 WIB
+      // maka akan kembali pada 11.45 WIB (berikutnya menunggu misi diselesaikan)
+      
+      // Pastikan nextReset > referenceTime
+      while (nextReset <= referenceTime) {
+        nextReset = new Date(nextReset.getTime() + intervalMs);
+      }
+      
+      // Pastikan nextReset > now
+      while (nextReset <= now) {
+        nextReset = new Date(nextReset.getTime() + intervalMs);
+      }
+    }
+    
+    return nextReset;
+  }
+  
+  // KASUS 2: Hari/Minggu dengan Reset Time
+  if (mission.interval.resetTime) {
+    const [targetHour, targetMinute] = mission.interval.resetTime.split(':').map(Number);
+    
+    let nextReset;
+    
+    if (mission.interval.resetOption === 'fixed') {
+      // FIXED: Mulai dari waktu disorot
+      nextReset = new Date(mission.createdAt);
+      
+      if (timezone === 'UTC') {
+        nextReset.setUTCHours(targetHour, targetMinute, 0, 0);
+      } else {
+        const { utcHours, minutes: utcMinutes } = getUTCTimeForWIB(targetHour, targetMinute);
+        nextReset.setUTCHours(utcHours, utcMinutes, 0, 0);
+      }
+      
+      // Jika waktu reset sudah lewat, tambah interval
+      if (nextReset <= new Date(mission.createdAt)) {
+        if (mission.interval.unit === 'days') {
+          nextReset.setUTCDate(nextReset.getUTCDate() + mission.interval.value);
+        } else if (mission.interval.unit === 'weeks') {
+          nextReset.setUTCDate(nextReset.getUTCDate() + (7 * mission.interval.value));
+        }
+      }
+      
+      // Cari waktu reset berikutnya yang > now
+      while (nextReset <= now) {
+        if (mission.interval.unit === 'days') {
+          nextReset.setUTCDate(nextReset.getUTCDate() + mission.interval.value);
+        } else if (mission.interval.unit === 'weeks') {
+          nextReset.setUTCDate(nextReset.getUTCDate() + (7 * mission.interval.value));
+        }
+      }
+      
+    } else {
+      // FLEXIBLE: Mulai dari waktu terakhir diselesaikan
+      nextReset = new Date(mission.lastReset || mission.createdAt);
+      
+      if (timezone === 'UTC') {
+        nextReset.setUTCHours(targetHour, targetMinute, 0, 0);
+      } else {
+        const { utcHours, minutes: utcMinutes } = getUTCTimeForWIB(targetHour, targetMinute);
+        nextReset.setUTCHours(utcHours, utcMinutes, 0, 0);
+      }
+      
+      // Pastikan nextReset > referenceTime
+      if (nextReset <= referenceTime) {
+        if (mission.interval.unit === 'days') {
+          nextReset.setUTCDate(nextReset.getUTCDate() + mission.interval.value);
+        } else if (mission.interval.unit === 'weeks') {
+          nextReset.setUTCDate(nextReset.getUTCDate() + (7 * mission.interval.value));
+        }
+      }
+      
+      // Pastikan nextReset > now
+      while (nextReset <= now) {
+        if (mission.interval.unit === 'days') {
+          nextReset.setUTCDate(nextReset.getUTCDate() + mission.interval.value);
+        } else if (mission.interval.unit === 'weeks') {
+          nextReset.setUTCDate(nextReset.getUTCDate() + (7 * mission.interval.value));
+        }
+      }
+    }
+    
+    return nextReset;
+  }
+  
+  // KASUS 3: Hari/Minggu TANPA Reset Time (default)
+  let nextReset = new Date(referenceTime.getTime() + intervalMs);
+  
+  if (mission.interval.resetOption === 'fixed') {
+    while (nextReset <= now) {
+      nextReset = new Date(nextReset.getTime() + intervalMs);
+    }
+  } else {
+    while (nextReset <= referenceTime) {
+      nextReset = new Date(nextReset.getTime() + intervalMs);
+    }
+    
+    while (nextReset <= now) {
+      nextReset = new Date(nextReset.getTime() + intervalMs);
+    }
+  }
+  
+  return nextReset;
+}
+
+// ===== FUNGSI UTAMA: Check & Reset Missions =====
+function checkAndResetMissions() {
+  const now = new Date();
+  let needsUpdate = false;
+
+  missions.forEach(mission => {
+    if (!mission.interval) return;
+
+    const nextReset = mission.nextReset
+      ? new Date(mission.nextReset)
+      : calculateNextReset(mission);
+
+    if (nextReset && nextReset <= now) {
+      // Reset mission ke pending
+      mission.done = false;
+      mission.lastReset = now.toISOString();
+      
+      // PERBAIKAN: Untuk FIXED reset, tetap gunakan waktu awal sebagai reference
+      // Untuk FLEXIBLE reset, gunakan waktu reset terakhir sebagai reference baru
+      
+      if (mission.interval.resetOption === 'fixed') {
+        // Untuk FIXED: Selalu hitung dari waktu awal (createdAt)
+        // Tidak perlu update reference time
+      } else {
+        // Untuk FLEXIBLE: Update reference time ke waktu reset terakhir
+        mission.lastReset = now.toISOString();
+      }
+      
+      // Hitung next reset berikutnya
+      mission.nextReset = calculateNextReset(mission);
+
+      addLog(`⏰ id:${mission.id} kembali ke Misi`);
+      needsUpdate = true;
+    }
+  });
+
+  if (needsUpdate) {
+    saveToLocalStorage();
+    renderMissions();
+    renderTables();
+  }
+}
+
+// ===== FUNGSI UTAMA: Reset Interval System =====
+function getCurrentTime() {
+  const now = new Date();
+  const timezone = timezoneSelect.value;
+  
+  if (timezone === 'UTC') {
+    return now.toUTCString().slice(17, 22) + ' UTC';
+  } else {
+    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const wibTime = new Date(utcTime + (7 * 60 * 60000));
+    return wibTime.toLocaleTimeString('id-ID', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    }) + ' WIB';
+  }
+}
+
+function getCurrentDateTime(timezone = null) {
+  const now = new Date();
+  const tz = timezone || timezoneSelect.value;
+  
+  if (tz === 'UTC') {
+    return now.toISOString();
+  } else {
+    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const wibTime = new Date(utcTime + (7 * 60 * 60000));
+    return wibTime.toISOString();
+  }
+}
+
+// ===== FUNGSI BANTU: Konversi Timezone =====
+function getUTCTimeForWIB(wibHours, wibMinutes) {
+  // WIB = UTC+7 → UTC = WIB-7
+  let utcHours = wibHours - 7;
+  if (utcHours < 0) {
+    utcHours += 24;
+  }
+  return { utcHours, minutes: wibMinutes };
+}
+
+function getWIBTimeFromUTC(utcHours, utcMinutes) {
+  // UTC → WIB: UTC+7
+  let wibHours = utcHours + 7;
+  if (wibHours >= 24) {
+    wibHours -= 24;
+  }
+  return { wibHours, minutes: utcMinutes };
+}
+
+// ===== FUNGSI untuk Menangani Sorot =====
+function handleSorotSelection() {
+  if (editingMissionId) {
+    handleUncheckMission();
+  } else {
+    const item = tablesData[currentTableIndex].lists[currentItemIndex];
+    
+    item.sorot = true;
+    
+    let mission = missions.find(m => m.id === item.id);
+    
+    if (!mission) {
+      mission = {
+        id: item.id,
+        text: item.nama,
+        done: false,
+        createdAt: getCurrentDateTime()
+      };
+      
+      if (currentSorotType === 'berulang') {
+        const unit = document.getElementById('intervalUnit').value;
+        mission.interval = {
+          value: parseInt(document.getElementById('intervalValue').value) || 1,
+          unit: unit
+        };
+        
+        if (unit === 'hours') {
+          // Untuk jam, gunakan opsi khusus
+          const jamStartOption = document.querySelector('input[name="intervalJamStart"]:checked').value;
+          mission.interval.resetOption = jamStartOption === 'after_sorot' ? 'fixed' : 'flexible';
+          mission.interval.timezone = 'WIB';
+          
+          // Debug log
+          console.log(`Jam: resetOption = ${mission.interval.resetOption}, jamStartOption = ${jamStartOption}`);
+        } else {
+          // Untuk hari/minggu
+          mission.interval.resetTime = `${resetHourInput.value.padStart(2, '0')}:${resetMinuteInput.value.padStart(2, '0')}`;
+          mission.interval.timezone = document.getElementById('resetTimezone').value;
+          mission.interval.resetOption = document.querySelector('input[name="resetOption"]:checked').value;
+        }
+        
+        // Hitung waktu reset pertama
+        mission.nextReset = calculateNextReset(mission);
+        
+        // Debug log
+        console.log(`Misi baru dengan interval:`, {
+          value: mission.interval.value,
+          unit: mission.interval.unit,
+          resetOption: mission.interval.resetOption,
+          nextReset: mission.nextReset ? mission.nextReset.toLocaleString('id-ID') : 'null'
+        });
+      }
+      
+      missions.push(mission);
+      addLog(`✨ id:${item.id} "${item.nama}" ditambahkan ke misi (${currentSorotType})`);
+    } else {
+      mission.done = false;
+      
+      if (currentSorotType === 'berulang') {
+        const unit = document.getElementById('intervalUnit').value;
+        mission.interval = {
+          value: parseInt(document.getElementById('intervalValue').value) || 1,
+          unit: unit
+        };
+        
+        if (unit === 'hours') {
+          const jamStartOption = document.querySelector('input[name="intervalJamStart"]:checked').value;
+          mission.interval.resetOption = jamStartOption === 'after_sorot' ? 'fixed' : 'flexible';
+          mission.interval.timezone = 'WIB';
+        } else {
+          mission.interval.resetTime = `${resetHourInput.value.padStart(2, '0')}:${resetMinuteInput.value.padStart(2, '0')}`;
+          mission.interval.timezone = document.getElementById('resetTimezone').value;
+          mission.interval.resetOption = document.querySelector('input[name="resetOption"]:checked').value;
+        }
+        
+        // Reset lastReset untuk memulai perhitungan baru
+        mission.lastReset = null;
+        mission.nextReset = calculateNextReset(mission);
+      } else {
+        delete mission.interval;
+        delete mission.nextReset;
+        delete mission.lastReset;
+      }
+      
+      addLog(`↻ id:${item.id} diupdate (${currentSorotType})`);
+    }
+    
+    renderTables();
+    renderMissions();
+    saveToLocalStorage();
+    closeSorotOptionsModal();
+  }
+}
+
+// ===== FUNGSI untuk Menangani Check/Uncheck Mission =====
+function toggleMission(missionId) {
+  const mission = missions.find(m => m.id === missionId);
+  if (!mission) return;
+  
+  if (mission.done) {
+    openUncheckModal(mission);
+  } else {
+    mission.done = true;
+    mission.lastReset = getCurrentDateTime();
+    const action = mission.interval ? 'diselesaikan (akan direset)' : 'diselesaikan';
+    addLog(`✓ id:${mission.id} ${action} pada ${getCurrentTime()}`);
+    
+    if (!mission.interval) {
+      tablesData.forEach(table => {
+        table.lists.forEach(item => {
+          if (item.id === missionId) {
+            item.sorot = false;
+          }
+        });
+      });
+    }
+    
+    renderMissions();
+    renderTables();
+    saveToLocalStorage();
+  }
+}
+
+function handleUncheckMission() {
+  const mission = missions.find(m => m.id === editingMissionId);
+  if (!mission) return;
+  
+  mission.done = false;
+  
+  if (currentSorotType === 'berulang') {
+    mission.interval = {
+      value: parseInt(document.getElementById('intervalValue').value) || 1,
+      unit: document.getElementById('intervalUnit').value
+    };
+    
+    const unit = document.getElementById('intervalUnit').value;
+    if (unit === 'hours') {
+      // Untuk jam, gunakan opsi khusus
+      const jamStartOption = document.querySelector('input[name="intervalJamStart"]:checked').value;
+      mission.interval.resetOption = jamStartOption === 'after_sorot' ? 'fixed' : 'flexible';
+      mission.interval.timezone = 'WIB';
+    } else {
+      // Untuk hari/minggu
+      mission.interval.resetTime = `${resetHourInput.value.padStart(2, '0')}:${resetMinuteInput.value.padStart(2, '0')}`;
+      mission.interval.timezone = document.getElementById('resetTimezone').value;
+      mission.interval.resetOption = document.querySelector('input[name="resetOption"]:checked').value;
+    }
+    
+    // Reset timestamp
+    mission.lastReset = null;
+    
+    // Hitung waktu reset pertama
+    mission.nextReset = calculateNextReset(mission);
+  } else {
+    delete mission.interval;
+    delete mission.nextReset;
+    delete mission.lastReset;
+  }
+  
+  tablesData.forEach(table => {
+    table.lists.forEach(item => {
+      if (item.id === editingMissionId) {
+        item.sorot = true;
+      }
+    });
+  });
+  
+  addLog(`↻ id:${mission.id} dibatalkan pada ${getCurrentTime()} (${currentSorotType})`);
+  
+  renderMissions();
+  renderTables();
+  saveToLocalStorage();
+  closeSorotOptionsModal();
+  editingMissionId = null;
+}
+
+// ===== Debug function untuk memverifikasi logika =====
+function debugIntervalLogic(mission) {
+  if (!mission.interval) return;
+  
+  console.log('=== DEBUG INTERVAL LOGIC ===');
+  console.log(`Mission: ${mission.text}`);
+  console.log(`ID: ${mission.id}`);
+  console.log(`Created At: ${mission.createdAt ? new Date(mission.createdAt).toLocaleString('id-ID') : 'N/A'}`);
+  console.log(`Last Reset: ${mission.lastReset ? new Date(mission.lastReset).toLocaleString('id-ID') : 'N/A'}`);
+  console.log(`Done: ${mission.done}`);
+  console.log(`Interval: ${mission.interval.value} ${mission.interval.unit}`);
+  console.log(`Reset Option: ${mission.interval.resetOption}`);
+  console.log(`Reset Time: ${mission.interval.resetTime || 'N/A'}`);
+  
+  const nextReset = calculateNextReset(mission);
+  console.log(`Next Reset: ${nextReset ? nextReset.toLocaleString('id-ID') : 'N/A'}`);
+  console.log(`Time Remaining: ${formatTimeRemaining(nextReset)}`);
+  console.log('===========================');
+}
+
+// ===== PERBAIKAN UTAMA: Initialize dengan Auto Reset Checker =====
+function startAutoResetChecker() {
+  // Cek reset segera saat start
+  checkAndResetMissions();
+  
+  // Cek setiap 10 detik
+  setInterval(() => {
+    const before = missions.filter(m => m.done === false).length;
+    checkAndResetMissions();
+    const after = missions.filter(m => m.done === false).length;
+    
+    if (after > before) {
+      console.log(`[${getCurrentTime()}] ${after - before} misi direset otomatis`);
+      
+      // Debug log untuk misi yang direset
+      missions.forEach(mission => {
+        if (mission.interval) {
+          debugIntervalLogic(mission);
+        }
+      });
+    }
+  }, 10000);
+  
+  // Tambah event listener untuk visibility change
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      console.log(`[${getCurrentTime()}] Tab aktif, cek reset misi`);
+      checkAndResetMissions();
+    }
+  });
+  
+  // Tambah event listener untuk window focus
+  window.addEventListener('focus', () => {
+    console.log(`[${getCurrentTime()}] Window fokus, cek reset misi`);
+    checkAndResetMissions();
+  });
+}
+
+// ===== FUNGSI TAMBAHAN YANG DIPERLUKAN =====
+function formatTimeRemaining(nextReset) {
+  if (!nextReset) return "Tidak ada";
+  
+  const now = new Date();
+  const diffMs = nextReset - now;
+  
+  if (diffMs <= 0) return "Sekarang";
+  
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  
+  if (diffDays > 0) {
+    const remainingHours = diffHours % 24;
+    const remainingMinutes = diffMinutes % 60;
+    return `${diffDays}h ${remainingHours}j ${remainingMinutes}m`;
+  } else if (diffHours > 0) {
+    const remainingMinutes = diffMinutes % 60;
+    return `${diffHours}j ${remainingMinutes}m`;
+  } else {
+    return `${diffMinutes}m`;
+  }
+}
+
+// ===== HELPER FUNCTIONS =====
+function getTableTitleForMission(missionId) {
+  for (let table of tablesData) {
+    const item = table.lists.find(item => item.id === missionId);
+    if (item) {
+      return table.judul;
+    }
+  }
+  return "Tabel Tidak Diketahui";
+}
+
+function getTableIndexForMission(missionId) {
+  for (let i = 0; i < tablesData.length; i++) {
+    const item = tablesData[i].lists.find(item => item.id === missionId);
+    if (item) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function highlightAndFocusTable(tableIndex) {
+  const previousHighlighted = tablesBox.querySelector('.table-card.highlighted');
+  if (previousHighlighted) {
+    previousHighlighted.classList.remove('highlighted');
+  }
+  
+  if (highlightTimeout) {
+    clearTimeout(highlightTimeout);
+  }
+  
+  const tableCards = tablesBox.querySelectorAll('.table-card');
+  if (tableIndex >= 0 && tableIndex < tableCards.length) {
+    const targetTable = tableCards[tableIndex];
+    
+    tablesBox.scrollLeft = targetTable.offsetLeft - 16;
+    targetTable.classList.add('highlighted');
+    
+    highlightTimeout = setTimeout(() => {
+      targetTable.classList.remove('highlighted');
+    }, 5000);
+    
+    highlightedTableIndex = tableIndex;
+  }
+}
+
+function generateId() {
+  return 'id_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36);
+}
+
+function addLog(text) {
+  const logDiv = document.createElement('div');
+  logDiv.className = 'log';
+  logDiv.textContent = text;
+  logBox.prepend(logDiv);
+  
+  const logs = logBox.querySelectorAll('.log');
+  if (logs.length > 50) {
+    logs[logs.length - 1].remove();
+  }
+}
+
+// ===== MISSION FUNCTIONS =====
+function toggleMission(missionId) {
+  const mission = missions.find(m => m.id === missionId);
+  if (!mission) return;
+  
+  if (mission.done) {
+    openUncheckModal(mission);
+  } else {
+    mission.done = true;
+    mission.lastReset = getCurrentDateTime();
+    const action = mission.interval ? 'diselesaikan (akan direset)' : 'diselesaikan';
+    addLog(`✓ id:${mission.id} ${action} pada ${getCurrentTime()}`);
+    
+    if (!mission.interval) {
+      tablesData.forEach(table => {
+        table.lists.forEach(item => {
+          if (item.id === missionId) {
+            item.sorot = false;
+          }
+        });
+      });
+    }
+    
+    renderMissions();
+    renderTables();
+    saveToLocalStorage();
+  }
+}
+
+function openUncheckModal(mission) {
+  editingMissionId = mission.id;
+  currentSorotType = mission.interval ? 'berulang' : 'sekali';
+  
+  document.querySelectorAll('.sorot-type-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.type === currentSorotType) {
+      btn.classList.add('active');
+    }
+  });
+  
+  if (mission.interval) {
+    document.getElementById('intervalSettings').style.display = 'block';
+    document.getElementById('intervalValue').value = mission.interval.value;
+    document.getElementById('intervalUnit').value = mission.interval.unit;
+    
+    // Tampilkan opsi sesuai interval unit
+    const unit = mission.interval.unit;
+    if (unit === 'hours') {
+      resetTimeRow.style.display = 'none';
+      resetTimeNote.style.display = 'none';
+      intervalJamOptions.style.display = 'block';
+      intervalDayWeekOptions.style.display = 'none';
+      
+      if (mission.interval.resetOption === 'fixed') {
+        document.getElementById('intervalJamStartOption1').checked = true;
+      } else {
+        document.getElementById('intervalJamStartOption2').checked = true;
+      }
+    } else {
+      resetTimeRow.style.display = 'flex';
+      resetTimeNote.style.display = 'block';
+      intervalJamOptions.style.display = 'none';
+      intervalDayWeekOptions.style.display = 'block';
+      
+      if (mission.interval.resetTime) {
+        const [hours, minutes] = mission.interval.resetTime.split(':');
+        resetHourInput.value = hours || '19';
+        resetMinuteInput.value = minutes || '00';
+      }
+      
+      document.getElementById('resetTimezone').value = mission.interval.timezone || 'WIB';
+      
+      if (mission.interval.resetOption === 'fixed') {
+        document.getElementById('resetOptionFixed').checked = true;
+      } else {
+        document.getElementById('resetOptionFlexible').checked = true;
+      }
+    }
+  } else {
+    document.getElementById('intervalSettings').style.display = 'none';
+  }
+  
+  const modalTitle = document.getElementById('sorotModalTitle');
+  modalTitle.textContent = editingMissionId ? 'Batalkan Misi' : 'Pilih Jenis Sorot';
+  
+  sorotOptionsModal.style.display = 'flex';
+}
+
+function handleUncheckMission() {
+  const mission = missions.find(m => m.id === editingMissionId);
+  if (!mission) return;
+  
+  mission.done = false;
+  
+  if (currentSorotType === 'berulang') {
+    mission.interval = {
+      value: parseInt(document.getElementById('intervalValue').value) || 1,
+      unit: document.getElementById('intervalUnit').value
+    };
+    
+    const unit = document.getElementById('intervalUnit').value;
+    if (unit === 'hours') {
+      // Untuk jam, gunakan opsi khusus
+      const jamStartOption = document.querySelector('input[name="intervalJamStart"]:checked').value;
+      mission.interval.resetOption = jamStartOption === 'after_sorot' ? 'fixed' : 'flexible';
+      mission.interval.timezone = 'WIB';
+    } else {
+      // Untuk hari/minggu
+      mission.interval.resetTime = `${resetHourInput.value.padStart(2, '0')}:${resetMinuteInput.value.padStart(2, '0')}`;
+      mission.interval.timezone = document.getElementById('resetTimezone').value;
+      mission.interval.resetOption = document.querySelector('input[name="resetOption"]:checked').value;
+    }
+    
+    // Hitung waktu reset pertama
+    mission.nextReset = calculateNextReset(mission);
+  } else {
+    delete mission.interval;
+    delete mission.nextReset;
+  }
+  
+  tablesData.forEach(table => {
+    table.lists.forEach(item => {
+      if (item.id === editingMissionId) {
+        item.sorot = true;
+      }
+    });
+  });
+  
+  addLog(`↻ id:${mission.id} dibatalkan pada ${getCurrentTime()} (${currentSorotType})`);
+  
+  renderMissions();
+  renderTables();
+  saveToLocalStorage();
+  closeSorotOptionsModal();
+  editingMissionId = null;
+}
+
+function removeMission(missionId) {
+  const mission = missions.find(m => m.id === missionId);
+  if (!mission) return;
+  
+  if (!confirm(`Hapus misi permanen?\n\n"${mission.text}"\n\nID: ${missionId}\n\nAksi ini akan menghapus sorotan dari tabel dan tidak dapat dibatalkan.`)) {
+    return;
+  }
+  
+  missions = missions.filter(m => m.id !== missionId);
+  
+  tablesData.forEach(table => {
+    table.lists.forEach(item => {
+      if (item.id === missionId) {
+        item.sorot = false;
+      }
+    });
+  });
+  
+  addLog(`🗑️ id:${missionId} dihapus permanen dari misi`);
+  renderMissions();
+  renderTables();
+  saveToLocalStorage();
+}
+
+function renderMissions() {
+  checkAndResetMissions();
+  
+  misiBox.innerHTML = '';
+  selesaiBox.innerHTML = '';
+  
+  if (missions.length === 0) {
+    misiBox.innerHTML = '<div class="empty-state">Belum ada misi yang aktif</div>';
+    selesaiBox.innerHTML = '<div class="empty-state">Belum ada misi yang selesai</div>';
+    return;
+  }
+  
+  const pendingMissions = missions.filter(m => !m.done);
+  const completedMissions = missions.filter(m => m.done);
+  
+  // Otomatis pindah ke tab Misi jika ada misi pending
+  if (pendingMissions.length > 0) {
+    const misiTab = document.querySelector('.tab[data-tab="misi"]');
+    const selesaiTab = document.querySelector('.tab[data-tab="selesai"]');
+    const misiContent = document.getElementById('misi');
+    const selesaiContent = document.getElementById('selesai');
+    
+    // Hanya pindah jika sedang di tab Selesai
+    if (selesaiTab && selesaiTab.classList.contains('active')) {
+      misiTab.classList.add('active');
+      selesaiTab.classList.remove('active');
+      misiContent.classList.add('active');
+      selesaiContent.classList.remove('active');
+    }
+  }
+  
+  if (pendingMissions.length === 0) {
+    misiBox.innerHTML = '<div class="empty-state">Semua misi sudah selesai! 🎉</div>';
+  } else {
+    pendingMissions.forEach(mission => {
+      misiBox.appendChild(createMissionCard(mission));
+    });
+  }
+  
+  if (completedMissions.length === 0) {
+    selesaiBox.innerHTML = '<div class="empty-state">Belum ada misi yang selesai</div>';
+  } else {
+    completedMissions.forEach(mission => {
+      selesaiBox.appendChild(createMissionCard(mission));
+    });
+  }
+}
+
+function createMissionCard(mission) {
+  const isPending = !mission.done;
+  const card = document.createElement('div');
+  card.className = `mission-card ${mission.done ? 'done' : 'pending'}`;
+  card.dataset.missionId = mission.id;
+  
+  const tableTitle = getTableTitleForMission(mission.id);
+  
+  let infoHtml = '';
+  if (mission.interval) {
+    const nextReset = calculateNextReset(mission);
+    if (nextReset) {
+      const timeRemaining = formatTimeRemaining(nextReset);
+      const unitText = {
+        'hours': 'jam',
+        'days': 'hari',
+        'weeks': 'minggu'
+      }[mission.interval.unit];
+      
+      const resetOptionText = mission.interval.resetOption === 'fixed' ? ' (tetap)' : ' (fleksibel)';
+      const resetTimeText = mission.interval.resetTime ? ` pukul ${mission.interval.resetTime} ${mission.interval.timezone}` : '';
+      
+      const statusText = mission.done ? 
+        `⏳ Reset: ${timeRemaining}` : 
+        `🔄 Berulang setiap ${mission.interval.value} ${unitText}${resetOptionText}${resetTimeText}`;
+      
+      infoHtml = `
+        <div class="item-info">
+          ${statusText}
+          ${mission.done ? '' : `<span class="next-reset">Reset: ${timeRemaining}</span>`}
+        </div>
+      `;
+    }
+  }
+  
+  card.innerHTML = `
+    <input type="checkbox" ${mission.done ? 'checked' : ''}>
+    <div class="mission-title-wrapper">
+      <div class="mission-title" data-mission-id="${mission.id}" title="Klik untuk fokus ke tabel ${tableTitle}">
+        ${tableTitle}
+      </div>
+      <div class="mission-actions">
+        <button class="mission-fullsize-btn" data-mission-id="${mission.id}" title="Tampilkan detail lengkap">
+          ⛶
+        </button>
+        ${isPending ? `<button class="remove-mission-btn" data-mission-id="${mission.id}" title="Hapus misi permanen">×</button>` : ''}
+      </div>
+    </div>
+    <p>${mission.text}</p>
+    <div class="mission-id" data-mission-id="${mission.id}" title="Klik untuk salin ID">${mission.id}</div>
+    ${infoHtml}
+  `;
+  
+  const tableTitleElement = card.querySelector('.mission-title');
+  tableTitleElement.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const missionId = tableTitleElement.getAttribute('data-mission-id');
+    const tableIndex = getTableIndexForMission(missionId);
+    if (tableIndex !== -1) {
+      highlightAndFocusTable(tableIndex);
+      addLog(`📍 Fokus ke tabel "${tableTitle}" untuk misi "${mission.text}"`);
+    }
+  });
+  
+  const fullsizeBtn = card.querySelector('.mission-fullsize-btn');
+  fullsizeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const missionId = fullsizeBtn.getAttribute('data-mission-id');
+    openFullsizeModal(missionId);
+  });
+  
+  if (isPending) {
+    const removeBtn = card.querySelector('.remove-mission-btn');
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeMission(mission.id);
+    });
+  }
+  
+  const missionIdElement = card.querySelector('.mission-id');
+  missionIdElement.addEventListener('click', (e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(mission.id).then(() => {
+      const originalText = missionIdElement.textContent;
+      missionIdElement.textContent = '✓ ID Disalin!';
+      missionIdElement.style.background = 'var(--success)';
+      missionIdElement.style.color = 'white';
+      
+      setTimeout(() => {
+        missionIdElement.textContent = originalText;
+        missionIdElement.style.background = '';
+        missionIdElement.style.color = '';
+      }, 2000);
+    });
+  });
+  
+  card.querySelector('input').addEventListener('change', () => {
+    toggleMission(mission.id);
+  });
+  
+  return card;
+}
+
+// ===== TABLE FUNCTIONS =====
+function filterTablesBySearch() {
+  if (!searchQuery.trim()) {
+    renderTables();
+    return;
+  }
+  
+  const query = searchQuery.toLowerCase().trim();
+  const filteredTables = tablesData.map(table => {
+    const titleMatch = table.judul.toLowerCase().includes(query);
+    
+    const filteredItems = table.lists.filter(item => {
+      const nameMatch = item.nama.toLowerCase().includes(query);
+      const idMatch = item.id.toLowerCase().includes(query);
+      const linksMatch = item.links?.some(link => link.toLowerCase().includes(query)) || false;
+      const clipsMatch = item.klips?.some(clip => clip.toLowerCase().includes(query)) || false;
+      
+      return nameMatch || idMatch || linksMatch || clipsMatch;
+    });
+    
+    if (titleMatch || filteredItems.length > 0) {
+      return {
+        judul: table.judul,
+        lists: titleMatch ? table.lists : filteredItems
+      };
+    }
+    
+    return null;
+  }).filter(table => table !== null);
+  
+  renderFilteredTables(filteredTables);
+}
+
+function renderFilteredTables(filteredTables) {
+  tablesBox.innerHTML = '';
+  
+  if (filteredTables.length === 0) {
+    tablesBox.innerHTML = '<div class="empty-state">Tidak ditemukan tabel atau item yang sesuai</div>';
+    return;
+  }
+  
+  filteredTables.forEach((table, tableIndex) => {
+    const card = document.createElement('div');
+    card.className = 'table-card';
+    
+    card.innerHTML = `
+      <div class="table-header">
+        <div class="table-title">${table.judul}</div>
+        <div class="table-title-actions">
+          <button class="edit-table-btn" data-table-index="${getOriginalTableIndex(table.judul)}" title="Edit Judul Tabel">✏️</button>
+          <button class="delete-table-btn" data-table-index="${getOriginalTableIndex(table.judul)}" title="Hapus Tabel">×</button>
+        </div>
+      </div>
+      <div class="table-content" id="table-content-filtered-${tableIndex}"></div>
+    `;
+    
+    const tableContent = card.querySelector(`#table-content-filtered-${tableIndex}`);
+    
+    if (table.lists.length === 0) {
+      tableContent.innerHTML = '<div class="empty-table-state">Tidak ada item yang cocok</div>';
+    } else {
+      table.lists.forEach((item, itemIndex) => {
+        const originalTableIndex = getOriginalTableIndex(table.judul);
+        const originalItemIndex = getOriginalItemIndex(originalTableIndex, item.id);
+        tableContent.appendChild(createTableItem(item, originalTableIndex, originalItemIndex));
+      });
+    }
+    
+    tablesBox.appendChild(card);
+  });
+}
+
+function getOriginalTableIndex(tableTitle) {
+  return tablesData.findIndex(table => table.judul === tableTitle);
+}
+
+function getOriginalItemIndex(tableIndex, itemId) {
+  if (tableIndex === -1) return -1;
+  return tablesData[tableIndex].lists.findIndex(item => item.id === itemId);
+}
+
+function renderTables() {
+  if (searchQuery.trim()) {
+    filterTablesBySearch();
+    return;
+  }
+  
+  tablesBox.innerHTML = '';
+  
+  if (tablesData.length === 0) {
+    tablesBox.innerHTML = '<div class="empty-state">Belum ada tabel. Klik "Tambah Tabel" untuk membuat tabel pertama.</div>';
+    return;
+  }
+  
+  tablesData.forEach((table, tableIndex) => {
+    const card = document.createElement('div');
+    card.className = 'table-card';
+    if (highlightedTableIndex === tableIndex) {
+      card.classList.add('highlighted');
+    }
+    
+    card.innerHTML = `
+      <div class="table-header">
+        <div class="table-title">${table.judul}</div>
+        <div class="table-title-actions">
+          <button class="edit-table-btn" data-table-index="${tableIndex}" title="Edit Judul Tabel">✏️</button>
+          <button class="delete-table-btn" data-table-index="${tableIndex}" title="Hapus Tabel">×</button>
+        </div>
+      </div>
+      <div class="table-content" id="table-content-${tableIndex}"></div>
+      <div class="table-footer">
+        <button class="add-item-btn" data-table-index="${tableIndex}">
+          + Tambah Item Data
+        </button>
+      </div>
+    `;
+    
+    const tableContent = card.querySelector(`#table-content-${tableIndex}`);
+    
+    if (table.lists.length === 0) {
+      tableContent.innerHTML = '<div class="empty-table-state">Tidak ada item</div>';
+    } else {
+      table.lists.forEach((item, itemIndex) => {
+        tableContent.appendChild(createTableItem(item, tableIndex, itemIndex));
+      });
+    }
+    
+    const editBtn = card.querySelector('.edit-table-btn');
+    editBtn.addEventListener('click', () => {
+      const tableIndex = parseInt(editBtn.getAttribute('data-table-index'));
+      if (!isNaN(tableIndex) && tableIndex >= 0 && tableIndex < tablesData.length) {
+        openEditTableTitleModal(tableIndex);
+      }
+    });
+    
+    const deleteBtn = card.querySelector('.delete-table-btn');
+    deleteBtn.addEventListener('click', () => {
+      const tableIndex = parseInt(deleteBtn.getAttribute('data-table-index'));
+      if (!isNaN(tableIndex) && tableIndex >= 0 && tableIndex < tablesData.length) {
+        deleteTable(tableIndex);
+      }
+    });
+    
+    const addItemBtn = card.querySelector('.add-item-btn');
+    addItemBtn.addEventListener('click', () => {
+      const tableIndex = parseInt(addItemBtn.getAttribute('data-table-index'));
+      if (!isNaN(tableIndex) && tableIndex >= 0 && tableIndex < tablesData.length) {
+        openAddItemsModal(tableIndex);
+      }
+    });
+    
+    tablesBox.appendChild(card);
+  });
+  
+  if (tablesData.length > 0) {
+    tablesBox.scrollLeft = tablesBox.scrollWidth;
+  }
+}
+
+function createTableItem(item, tableIndex, itemIndex) {
+  const mission = missions.find(m => m.id === item.id);
+  const isHighlighted = item.sorot;
+  
+  let buttonText = 'Sorot';
+  let buttonClass = '';
+  
+  if (isHighlighted) {
+    if (mission) {
+      if (mission.interval) {
+        buttonText = 'Batal';
+        buttonClass = 'interval';
+      } else if (!mission.done) {
+        buttonText = 'Batal';
+        buttonClass = 'pending';
+      } else {
+        buttonText = 'Sorot';
+        buttonClass = '';
+      }
+    } else {
+      buttonText = 'Sorot';
+      buttonClass = '';
+    }
+  }
+  
+  const listItem = document.createElement('div');
+  listItem.className = `list-item ${isHighlighted ? 'sorot' : ''}`;
+  
+  const linksHtml = item.links && item.links.length > 0 ? item.links.map(link => `
+    <div class="link-item">
+      <div class="link-url-wrapper">
+        <div class="link-url">${link}</div>
+      </div>
+      <a href="${link}" target="_blank" rel="noopener noreferrer" class="link-open">
+        Buka
+      </a>
+    </div>
+  `).join('') : '';
+  
+  const clipsHtml = item.klips && item.klips.length > 0 ? item.klips.map((clip, clipIndex) => `
+    <div class="clip-item">
+      <div class="clip-content">${clip}</div>
+      <button class="clip-copy" data-clip="${clip}" title="Salin ke clipboard">Salin</button>
+    </div>
+  `).join('') : '';
+  
+  listItem.innerHTML = `
+    <div class="item-header">
+      <div class="item-name">${item.nama}</div>
+      <div class="item-actions">
+        <button class="edit-item-btn" data-table-index="${tableIndex}" data-item-index="${itemIndex}" title="Edit Item">✏️</button>
+        <button class="delete-item-btn" data-table-index="${tableIndex}" data-item-index="${itemIndex}" title="Hapus Item">×</button>
+        <button class="sorot-btn ${buttonClass}" data-item-id="${item.id}" data-table-index="${tableIndex}" data-item-index="${itemIndex}">
+          ${buttonText}
+        </button>
+      </div>
+    </div>
+    <div class="mission-id" title="ID: ${item.id}">${item.id}</div>
+    ${linksHtml ? `
+    <div class="links-container">
+      <div class="link-header">
+        <span>Links:</span>
+        <button class="toggle-links-btn" data-mode="vertical">▼</button>
+      </div>
+      <div class="links-wrapper">
+        <div class="links-list" id="links-${tableIndex}-${itemIndex}">
+          ${linksHtml}
+        </div>
+      </div>
+    </div>
+    ` : ''}
+    ${clipsHtml ? `
+    <div class="clips-container">
+      <div class="clip-header">
+        <span>Klips:</span>
+        <button class="toggle-clips-btn" data-mode="vertical">▼</button>
+      </div>
+      <div class="clips-wrapper">
+        <div class="clips-list" id="clips-${tableIndex}-${itemIndex}">
+          ${clipsHtml}
+        </div>
+      </div>
+    </div>
+    ` : ''}
+  `;
+  
+  const editItemBtn = listItem.querySelector('.edit-item-btn');
+  if (editItemBtn) {
+    editItemBtn.addEventListener('click', () => {
+      const tableIndex = parseInt(editItemBtn.getAttribute('data-table-index'));
+      const itemIndex = parseInt(editItemBtn.getAttribute('data-item-index'));
+      if (!isNaN(tableIndex) && !isNaN(itemIndex)) {
+        openEditItemModal(tableIndex, itemIndex);
+      }
+    });
+  }
+  
+  const deleteItemBtn = listItem.querySelector('.delete-item-btn');
+  if (deleteItemBtn) {
+    deleteItemBtn.addEventListener('click', () => {
+      const tableIndex = parseInt(deleteItemBtn.getAttribute('data-table-index'));
+      const itemIndex = parseInt(deleteItemBtn.getAttribute('data-item-index'));
+      if (!isNaN(tableIndex) && !isNaN(itemIndex)) {
+        deleteItem(tableIndex, itemIndex);
+      }
+    });
+  }
+  
+  const sorotBtn = listItem.querySelector('.sorot-btn');
+  sorotBtn.addEventListener('click', () => {
+    const buttonText = sorotBtn.textContent.trim();
+    
+    if (buttonText === 'Sorot') {
+      const tableIndex = parseInt(sorotBtn.getAttribute('data-table-index'));
+      const itemIndex = parseInt(sorotBtn.getAttribute('data-item-index'));
+      if (!isNaN(tableIndex) && !isNaN(itemIndex)) {
+        openSorotOptionsModal(tableIndex, itemIndex);
+      }
+    } else {
+      const itemId = sorotBtn.getAttribute('data-item-id');
+      const mission = missions.find(m => m.id === itemId);
+      if (mission && confirm(`Hapus sorotan permanen?\n\n"${mission.text}"\n\nID: ${itemId}\n\nAksi ini akan menghapus misi dan tidak dapat dibatalkan.`)) {
+        removeMission(itemId);
+      }
+    }
+  });
+  
+  const toggleLinksBtn = listItem.querySelector('.toggle-links-btn');
+  if (toggleLinksBtn) {
+    const linksList = listItem.querySelector('.links-list');
+    let linkDisplayMode = 'vertical';
+    
+    toggleLinksBtn.addEventListener('click', () => {
+      if (linkDisplayMode === 'vertical') {
+        linksList.classList.remove('show');
+        linksList.classList.add('horizontal');
+        toggleLinksBtn.textContent = '→';
+        toggleLinksBtn.setAttribute('data-mode', 'horizontal');
+        linkDisplayMode = 'horizontal';
+        
+        linksList.querySelectorAll('.link-item').forEach(linkItem => {
+          linkItem.classList.add('horizontal');
+        });
+      } else if (linkDisplayMode === 'horizontal') {
+        linksList.classList.remove('horizontal');
+        linksList.classList.add('show');
+        toggleLinksBtn.textContent = '▼';
+        toggleLinksBtn.setAttribute('data-mode', 'vertical');
+        linkDisplayMode = 'vertical';
+        
+        linksList.querySelectorAll('.linkItem').forEach(linkItem => {
+          linkItem.classList.remove('horizontal');
+        });
+      } else {
+        linksList.classList.add('show');
+        toggleLinksBtn.textContent = '▼';
+        toggleLinksBtn.setAttribute('data-mode', 'vertical');
+        linkDisplayMode = 'vertical';
+      }
+    });
+    
+    if (linksList) linksList.classList.add('show');
+  }
+  
+  const toggleClipsBtn = listItem.querySelector('.toggle-clips-btn');
+  if (toggleClipsBtn) {
+    const clipsList = listItem.querySelector('.clips-list');
+    
+    toggleClipsBtn.addEventListener('click', () => {
+      if (clipsList.classList.contains('show')) {
+        clipsList.classList.remove('show');
+        toggleClipsBtn.textContent = '▶';
+      } else {
+        clipsList.classList.add('show');
+        toggleClipsBtn.textContent = '▼';
+      }
+    });
+    
+    if (clipsList) clipsList.classList.add('show');
+  }
+  
+  listItem.querySelectorAll('.clip-copy').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const clipText = btn.getAttribute('data-clip');
+      navigator.clipboard.writeText(clipText).then(() => {
+        const originalText = btn.textContent;
+        btn.textContent = '✓ Disalin!';
+        btn.style.color = 'var(--success)';
+        
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.color = '';
+        }, 2000);
+      }).catch(err => {
+        console.error('Gagal menyalin:', err);
+        alert('Gagal menyalin ke clipboard');
+      });
+    });
+  });
+  
+  return listItem;
+}
+
+// ===== MODAL FUNCTIONS =====
+function openSorotOptionsModal(tableIndex, itemIndex) {
+  currentTableIndex = tableIndex;
+  currentItemIndex = itemIndex;
+  currentSorotType = 'sekali';
+  editingMissionId = null;
+  
+  document.querySelectorAll('.sorot-type-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.dataset.type === 'sekali') {
+      btn.classList.add('active');
+    }
+  });
+  
+  document.getElementById('intervalSettings').style.display = 'none';
+  document.getElementById('intervalValue').value = '1';
+  document.getElementById('intervalUnit').value = 'days';
+  resetHourInput.value = '19';
+  resetMinuteInput.value = '00';
+  document.getElementById('resetTimezone').value = 'WIB';
+  
+  // Default options
+  document.getElementById('intervalJamStartOption1').checked = true;
+  document.getElementById('resetOptionFlexible').checked = true;
+  
+  sorotOptionsModal.style.display = 'flex';
+}
+
+function closeSorotOptionsModal() {
+  sorotOptionsModal.style.display = 'none';
+  currentTableIndex = null;
+  currentItemIndex = null;
+  editingMissionId = null;
+}
+
+function openEditItemModal(tableIndex, itemIndex) {
+  editingItemData = { tableIndex, itemIndex };
+  const item = tablesData[tableIndex].lists[itemIndex];
+  
+  itemNameInput.value = item.nama || '';
+  
+  linksContainer.innerHTML = '';
+  
+  if (item.links && item.links.length > 0) {
+    item.links.forEach((link, index) => {
+      addLinkInput(link, index);
+    });
+  } else {
+    addLinkInput('', 0);
+  }
+  
+  clipsContainer.innerHTML = '';
+  
+  if (item.klips && item.klips.length > 0) {
+    item.klips.forEach((clip, index) => {
+      addClipInput(clip, index);
+    });
+  } else {
+    addClipInput('', 0);
+  }
+  
+  editItemModal.style.display = 'flex';
+}
+
+function closeEditItemModal() {
+  editItemModal.style.display = 'none';
+  editingItemData = null;
+  linksContainer.innerHTML = '';
+  clipsContainer.innerHTML = '';
+}
+
+function openEditTableTitleModal(tableIndex) {
+  editingTableIndex = tableIndex;
+  tableTitleInput.value = tablesData[tableIndex].judul || '';
+  editTableTitleModal.style.display = 'flex';
+}
+
+function closeEditTableTitleModal() {
+  editTableTitleModal.style.display = 'none';
+  editingTableIndex = null;
+}
+
+function openAddItemsModal(tableIndex) {
+  addingToTableIndex = tableIndex;
+  itemDataGroupsContainer.innerHTML = '';
+  
+  addItemDataGroup(1);
+  
+  addItemsModal.style.display = 'flex';
+}
+
+function closeAddItemsModal() {
+  addItemsModal.style.display = 'none';
+  addingToTableIndex = null;
+  itemDataGroupsContainer.innerHTML = '';
+}
+
+function openSettingsModal() {
+  const savedToken = localStorage.getItem('missionBoard_githubToken');
+  const savedRepo = localStorage.getItem('missionBoard_githubRepo');
+  const savedPath = localStorage.getItem('missionBoard_githubPath');
+  const savedBranch = localStorage.getItem('missionBoard_githubBranch');
+  
+  if (savedToken) githubToken.value = savedToken;
+  if (savedRepo) githubRepo.value = savedRepo;
+  if (savedPath) githubPath.value = savedPath;
+  if (savedBranch) githubBranch.value = savedBranch;
+  
+  settingsModal.style.display = 'flex';
+}
+
+function closeSettingsModal() {
+  settingsModal.style.display = 'none';
+  fileInputWrapper.style.display = 'none';
+  githubConfig.classList.add('hidden');
+}
+
+// ===== FULLSIZE MODAL FUNCTIONS =====
+function openFullsizeModal(missionId) {
+  const mission = missions.find(m => m.id === missionId);
+  if (!mission) return;
+  
+  let itemData = null;
+  let tableTitle = "Tabel Tidak Diketahui";
+  
+  for (let table of tablesData) {
+    const item = table.lists.find(item => item.id === missionId);
+    if (item) {
+      itemData = item;
+      tableTitle = table.judul;
+      break;
+    }
+  }
+  
+  if (!itemData) return;
+  
+  document.getElementById('fullsizeModalTitle').textContent = `Detail: ${itemData.nama}`;
+  document.getElementById('fullsizeItemId').textContent = missionId;
+  document.getElementById('fullsizeTableTitle').textContent = tableTitle;
+  document.getElementById('fullsizeItemName').textContent = itemData.nama;
+  
+  const linksContainer = document.getElementById('fullsizeLinksContainer');
+  linksContainer.innerHTML = '';
+  
+  if (itemData.links && itemData.links.length > 0) {
+    itemData.links.forEach((link, index) => {
+      const linkDiv = document.createElement('div');
+      linkDiv.className = 'fullsize-link-item';
+      linkDiv.innerHTML = `
+        <div class="fullsize-link-url">${link}</div>
+        <div class="fullsize-link-actions">
+          <button class="fullsize-copy-link-btn" data-link="${link}">📋</button>
+          <a href="${link}" target="_blank" rel="noopener noreferrer" class="fullsize-open-link-btn">Buka</a>
+        </div>
+      `;
+      linksContainer.appendChild(linkDiv);
+    });
+  } else {
+    linksContainer.innerHTML = '<div class="empty-state" style="padding: 10px; font-size: 13px;">Tidak ada links</div>';
+  }
+  
+  const clipsContainer = document.getElementById('fullsizeClipsContainer');
+  clipsContainer.innerHTML = '';
+  
+  if (itemData.klips && itemData.klips.length > 0) {
+    itemData.klips.forEach((clip, index) => {
+      const clipDiv = document.createElement('div');
+      clipDiv.className = 'fullsize-clip-item';
+      clipDiv.innerHTML = `
+        <div class="fullsize-clip-content">${clip}</div>
+        <button class="fullsize-copy-clip-btn" data-clip="${clip}">Salin</button>
+      `;
+      clipsContainer.appendChild(clipDiv);
+    });
+  } else {
+    clipsContainer.innerHTML = '<div class="empty-state" style="padding: 10px; font-size: 13px;">Tidak ada klips</div>';
+  }
+  
+  const notesTextarea = document.getElementById('fullsizeNotes');
+  const savedNotes = localStorage.getItem(`mission_notes_${missionId}`);
+  notesTextarea.value = savedNotes || '';
+  notesTextarea.dataset.missionId = missionId;
+  
+  setupFullsizeCopyButtons();
+  fullsizeModal.style.display = 'flex';
+}
+
+function closeFullsizeModal() {
+  const notesTextarea = document.getElementById('fullsizeNotes');
+  const missionId = notesTextarea.dataset.missionId;
+  
+  if (missionId && notesTextarea.value.trim()) {
+    localStorage.setItem(`mission_notes_${missionId}`, notesTextarea.value.trim());
+    addLog(`📝 Catatan untuk misi ${missionId} disimpan`);
+  } else if (missionId && !notesTextarea.value.trim()) {
+    localStorage.removeItem(`mission_notes_${missionId}`);
+  }
+  
+  fullsizeModal.style.display = 'none';
+}
+
+function setupFullsizeCopyButtons() {
+  document.querySelectorAll('.copy-property-btn[data-target="fullsizeItemId"]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const targetElement = document.getElementById('fullsizeItemId');
+      if (targetElement) {
+        const textToCopy = targetElement.textContent;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          showCopyFeedback(this);
+        }).catch(err => {
+          console.error('Gagal menyalin:', err);
+        });
+      }
+    });
+  });
+  
+  document.querySelectorAll('.copy-property-btn:not([data-target="fullsizeItemId"])').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const targetId = this.getAttribute('data-target');
+      const targetElement = document.getElementById(targetId);
+      if (targetElement) {
+        const textToCopy = targetElement.textContent;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          showCopyFeedback(this);
+        }).catch(err => {
+          console.error('Gagal menyalin:', err);
+        });
+      }
+    });
+  });
+  
+  document.querySelectorAll('.fullsize-copy-link-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const link = this.getAttribute('data-link');
+      navigator.clipboard.writeText(link).then(() => {
+        showCopyFeedback(this);
+      }).catch(err => {
+        console.error('Gagal menyalin link:', err);
+      });
+    });
+  });
+  
+  document.querySelectorAll('.fullsize-copy-clip-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const clip = this.getAttribute('data-clip');
+      navigator.clipboard.writeText(clip).then(() => {
+        showCopyFeedback(this);
+      }).catch(err => {
+        console.error('Gagal menyalin klip:', err);
+      });
+    });
+  });
+}
+
+function showCopyFeedback(button) {
+  const originalHTML = button.innerHTML;
+  const originalBackground = button.style.background;
+  const originalColor = button.style.color;
+  const originalBorderColor = button.style.borderColor;
+  
+  button.innerHTML = '✓';
+  button.style.background = 'var(--success)';
+  button.style.color = 'white';
+  button.style.borderColor = 'var(--success)';
+  
+  setTimeout(() => {
+    button.innerHTML = originalHTML;
+    button.style.background = originalBackground;
+    button.style.color = originalColor;
+    button.style.borderColor = originalBorderColor;
+  }, 1500);
+}
+
+// ===== DATA MANAGEMENT =====
+function addItemDataGroup(index) {
+  const groupDiv = document.createElement('div');
+  groupDiv.className = 'item-data-group';
+  groupDiv.dataset.index = index;
+  
+  groupDiv.innerHTML = `
+    <div class="item-data-header">
+      <div class="item-data-title">Item Data ${index}</div>
+      <div class="item-data-index">${index}</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label required">Nama:</label>
+      <input type="text" class="form-input item-data-name" placeholder="Masukkan nama item" data-index="${index}" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Links:</label>
+      <div class="links-container-small" id="links-container-${index}">
+        <div class="link-input-group">
+          <input type="text" class="form-input item-data-link" placeholder="https://example.com" data-index="${index}" data-link-index="1">
+          <button type="button" class="remove-link-btn" style="visibility: hidden;">×</button>
+        </div>
+      </div>
+      <button type="button" class="add-link-btn-small" data-index="${index}">+ 1 Link</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Klips:</label>
+      <div class="clips-container-small" id="clips-container-${index}">
+        <div class="clip-input-group">
+          <textarea class="textarea-input item-data-clip" placeholder="Masukkan teks klip..." data-index="${index}" data-clip-index="1" rows="2"></textarea>
+          <button type="button" class="remove-clip-btn" style="visibility: hidden;">×</button>
+        </div>
+      </div>
+      <button type="button" class="add-clip-btn-small" data-index="${index}">+ 1 Klip</button>
+    </div>
+    <button type="button" class="remove-item-data-btn" data-index="${index}" ${index === 1 ? 'style="display: none;"' : ''}>×</button>
+  `;
+  
+  const removeItemDataBtn = groupDiv.querySelector('.remove-item-data-btn');
+  removeItemDataBtn.addEventListener('click', () => {
+    removeItemDataGroup(index);
+  });
+  
+  const addLinkBtn = groupDiv.querySelector('.add-link-btn-small');
+  addLinkBtn.addEventListener('click', () => {
+    addLinkToGroup(index);
+  });
+  
+  const addClipBtn = groupDiv.querySelector('.add-clip-btn-small');
+  addClipBtn.addEventListener('click', () => {
+    addClipToGroup(index);
+  });
+  
+  const removeLinkBtn = groupDiv.querySelector('.remove-link-btn');
+  if (removeLinkBtn) {
+    removeLinkBtn.addEventListener('click', () => {
+      const linkGroup = removeLinkBtn.closest('.link-input-group');
+      if (linkGroup) {
+        const container = linkGroup.closest('.links-container-small');
+        if (container.querySelectorAll('.link-input-group').length > 1) {
+          linkGroup.remove();
+          updateRemoveLinkButtonsVisibility(container);
+        }
+      }
+    });
+  }
+  
+  const removeClipBtn = groupDiv.querySelector('.remove-clip-btn');
+  if (removeClipBtn) {
+    removeClipBtn.addEventListener('click', () => {
+      const clipGroup = removeClipBtn.closest('.clip-input-group');
+      if (clipGroup) {
+        const container = clipGroup.closest('.clips-container-small');
+        if (container.querySelectorAll('.clip-input-group').length > 1) {
+          clipGroup.remove();
+          updateRemoveClipButtonsVisibility(container);
+        }
+      }
+    });
+  }
+  
+  itemDataGroupsContainer.appendChild(groupDiv);
+}
+
+function removeItemDataGroup(index) {
+  const group = document.querySelector(`.item-data-group[data-index="${index}"]`);
+  if (group) {
+    group.remove();
+    
+    const remainingGroups = itemDataGroupsContainer.querySelectorAll('.item-data-group');
+    remainingGroups.forEach((group, newIndex) => {
+      const newIndexNum = newIndex + 1;
+      group.dataset.index = newIndexNum;
+      
+      const title = group.querySelector('.item-data-title');
+      const indexSpan = group.querySelector('.item-data-index');
+      if (title) title.textContent = `Item Data ${newIndexNum}`;
+      if (indexSpan) indexSpan.textContent = newIndexNum;
+      
+      const nameInput = group.querySelector('.item-data-name');
+      if (nameInput) nameInput.dataset.index = newIndexNum;
+      
+      const removeBtn = group.querySelector('.remove-item-data-btn');
+      if (removeBtn) {
+        removeBtn.dataset.index = newIndexNum;
+        if (remainingGroups.length === 1) {
+          removeBtn.style.display = 'none';
+        } else {
+          removeBtn.style.display = 'block';
+        }
+      }
+      
+      const linkInputs = group.querySelectorAll('.item-data-link');
+      linkInputs.forEach((input, linkIndex) => {
+        input.dataset.index = newIndexNum;
+        input.dataset.linkIndex = linkIndex + 1;
+      });
+      
+      const clipInputs = group.querySelectorAll('.item-data-clip');
+      clipInputs.forEach((input, clipIndex) => {
+        input.dataset.index = newIndexNum;
+        input.dataset.clipIndex = clipIndex + 1;
+      });
+      
+      const addLinkBtn = group.querySelector('.add-link-btn-small');
+      if (addLinkBtn) addLinkBtn.dataset.index = newIndexNum;
+      
+      const addClipBtn = group.querySelector('.add-clip-btn-small');
+      if (addClipBtn) addClipBtn.dataset.index = newIndexNum;
+    });
+  }
+}
+
+function addLinkToGroup(groupIndex) {
+  const container = document.getElementById(`links-container-${groupIndex}`);
+  if (!container) return;
+  
+  const linkGroups = container.querySelectorAll('.link-input-group');
+  const newLinkIndex = linkGroups.length + 1;
+  
+  const linkDiv = document.createElement('div');
+  linkDiv.className = 'link-input-group';
+  
+  linkDiv.innerHTML = `
+    <input type="text" class="form-input item-data-link" placeholder="https://example.com" data-index="${groupIndex}" data-link-index="${newLinkIndex}">
+    <button type="button" class="remove-link-btn">×</button>
+  `;
+  
+  const removeBtn = linkDiv.querySelector('.remove-link-btn');
+  removeBtn.addEventListener('click', () => {
+    if (linkGroups.length > 1) {
+      linkDiv.remove();
+      updateRemoveLinkButtonsVisibility(container);
+    }
+  });
+  
+  container.appendChild(linkDiv);
+  updateRemoveLinkButtonsVisibility(container);
+}
+
+function addClipToGroup(groupIndex) {
+  const container = document.getElementById(`clips-container-${groupIndex}`);
+  if (!container) return;
+  
+  const clipGroups = container.querySelectorAll('.clip-input-group');
+  const newClipIndex = clipGroups.length + 1;
+  
+  const clipDiv = document.createElement('div');
+  clipDiv.className = 'clip-input-group';
+  
+  clipDiv.innerHTML = `
+    <textarea class="textarea-input item-data-clip" placeholder="Masukkan teks klip..." data-index="${groupIndex}" data-clip-index="${newClipIndex}" rows="2"></textarea>
+    <button type="button" class="remove-clip-btn">×</button>
+  `;
+  
+  const removeBtn = clipDiv.querySelector('.remove-clip-btn');
+  removeBtn.addEventListener('click', () => {
+    if (clipGroups.length > 1) {
+      clipDiv.remove();
+      updateRemoveClipButtonsVisibility(container);
+    }
+  });
+  
+  container.appendChild(clipDiv);
+  updateRemoveClipButtonsVisibility(container);
+}
+
+function updateRemoveLinkButtonsVisibility(container) {
+  const linkGroups = container.querySelectorAll('.link-input-group');
+  linkGroups.forEach((group, index) => {
+    const removeBtn = group.querySelector('.remove-link-btn');
+    if (removeBtn) {
+      if (linkGroups.length === 1) {
+        removeBtn.style.visibility = 'hidden';
+      } else {
+        removeBtn.style.visibility = 'visible';
+      }
+    }
+  });
+}
+
+function updateRemoveClipButtonsVisibility(container) {
+  const clipGroups = container.querySelectorAll('.clip-input-group');
+  clipGroups.forEach((group, index) => {
+    const removeBtn = group.querySelector('.remove-clip-btn');
+    if (removeBtn) {
+      if (clipGroups.length === 1) {
+        removeBtn.style.visibility = 'hidden';
+      } else {
+        removeBtn.style.visibility = 'visible';
+      }
+    }
+  });
+}
+
+// Link Input Management
+function addLinkInput(value = '', index) {
+  const linkDiv = document.createElement('div');
+  linkDiv.className = 'link-input-group';
+  
+  const inputId = `linkInput_${Date.now()}_${index}`;
+  
+  linkDiv.innerHTML = `
+    <input type="text" id="${inputId}" class="form-input" placeholder="https://example.com" value="${value}">
+    <button type="button" class="remove-link-btn" ${linksContainer.children.length === 0 ? 'style="visibility: hidden;"' : ''}>×</button>
+  `;
+  
+  const removeBtn = linkDiv.querySelector('.remove-link-btn');
+  removeBtn.addEventListener('click', () => {
+    if (linksContainer.children.length > 1) {
+      linkDiv.remove();
+      updateRemoveButtonsVisibility();
+    }
+  });
+  
+  linksContainer.appendChild(linkDiv);
+  updateRemoveButtonsVisibility();
+}
+
+function addClipInput(value = '', index) {
+  const clipDiv = document.createElement('div');
+  clipDiv.className = 'clip-input-group';
+  
+  const textareaId = `clipInput_${Date.now()}_${index}`;
+  
+  clipDiv.innerHTML = `
+    <textarea id="${textareaId}" class="textarea-input" placeholder="Masukkan teks klip..." rows="2">${value}</textarea>
+    <button type="button" class="remove-clip-btn" ${clipsContainer.children.length === 0 ? 'style="visibility: hidden;"' : ''}>×</button>
+  `;
+  
+  const removeBtn = clipDiv.querySelector('.remove-clip-btn');
+  removeBtn.addEventListener('click', () => {
+    if (clipsContainer.children.length > 1) {
+      clipDiv.remove();
+      updateRemoveClipButtonsVisibility(clipsContainer);
+    }
+  });
+  
+  clipsContainer.appendChild(clipDiv);
+  updateRemoveClipButtonsVisibility(clipsContainer);
+}
+
+function updateRemoveButtonsVisibility() {
+  const linkGroups = linksContainer.querySelectorAll('.link-input-group');
+  linkGroups.forEach((group, index) => {
+    const removeBtn = group.querySelector('.remove-link-btn');
+    if (linkGroups.length === 1) {
+      removeBtn.style.visibility = 'hidden';
+    } else {
+      removeBtn.style.visibility = 'visible';
+    }
+  });
+}
+
+function handleSorotSelection() {
+  if (editingMissionId) {
+    handleUncheckMission();
+  } else {
+    const item = tablesData[currentTableIndex].lists[currentItemIndex];
+    
+    item.sorot = true;
+    
+    let mission = missions.find(m => m.id === item.id);
+    
+    if (!mission) {
+      mission = {
+        id: item.id,
+        text: item.nama,
+        done: false,
+        createdAt: getCurrentDateTime()
+      };
+      
+      if (currentSorotType === 'berulang') {
+        const unit = document.getElementById('intervalUnit').value;
+        mission.interval = {
+          value: parseInt(document.getElementById('intervalValue').value) || 1,
+          unit: unit
+        };
+        
+        if (unit === 'hours') {
+          // Untuk jam, gunakan opsi khusus
+          const jamStartOption = document.querySelector('input[name="intervalJamStart"]:checked').value;
+          mission.interval.resetOption = jamStartOption === 'after_sorot' ? 'fixed' : 'flexible';
+          mission.interval.timezone = 'WIB';
+        } else {
+          // Untuk hari/minggu
+          mission.interval.resetTime = `${resetHourInput.value.padStart(2, '0')}:${resetMinuteInput.value.padStart(2, '0')}`;
+          mission.interval.timezone = document.getElementById('resetTimezone').value;
+          mission.interval.resetOption = document.querySelector('input[name="resetOption"]:checked').value;
+        }
+        
+        // Hitung waktu reset pertama
+        mission.nextReset = calculateNextReset(mission);
+      }
+      
+      missions.push(mission);
+      addLog(`✨ id:${item.id} "${item.nama}" ditambahkan ke misi (${currentSorotType})`);
+    } else {
+      mission.done = false;
+      
+      if (currentSorotType === 'berulang') {
+        const unit = document.getElementById('intervalUnit').value;
+        mission.interval = {
+          value: parseInt(document.getElementById('intervalValue').value) || 1,
+          unit: unit
+        };
+        
+        if (unit === 'hours') {
+          const jamStartOption = document.querySelector('input[name="intervalJamStart"]:checked').value;
+          mission.interval.resetOption = jamStartOption === 'after_sorot' ? 'fixed' : 'flexible';
+          mission.interval.timezone = 'WIB';
+        } else {
+          mission.interval.resetTime = `${resetHourInput.value.padStart(2, '0')}:${resetMinuteInput.value.padStart(2, '0')}`;
+          mission.interval.timezone = document.getElementById('resetTimezone').value;
+          mission.interval.resetOption = document.querySelector('input[name="resetOption"]:checked').value;
+        }
+        
+        mission.nextReset = calculateNextReset(mission);
+      } else {
+        delete mission.interval;
+        delete mission.nextReset;
+      }
+      
+      addLog(`↻ id:${item.id} diupdate (${currentSorotType})`);
+    }
+    
+    renderTables();
+    renderMissions();
+    saveToLocalStorage();
+    closeSorotOptionsModal();
+  }
+}
+
+function handleEditItemData() {
+  if (!editingItemData) return;
+  
+  const { tableIndex, itemIndex } = editingItemData;
+  const item = tablesData[tableIndex].lists[itemIndex];
+  
+  const newName = itemNameInput.value.trim();
+  if (!newName) {
+    alert('Nama item wajib diisi!');
+    return;
+  }
+  
+  const linkInputs = linksContainer.querySelectorAll('input[type="text"]');
+  const newLinks = Array.from(linkInputs)
+    .map(input => input.value.trim())
+    .filter(link => link !== '');
+  
+  const clipInputs = clipsContainer.querySelectorAll('textarea');
+  const newClips = Array.from(clipInputs)
+    .map(textarea => textarea.value.trim())
+    .filter(clip => clip !== '');
+  
+  const invalidLinks = newLinks.filter(link => !isValidUrl(link));
+  if (invalidLinks.length > 0) {
+    alert(`Link tidak valid:\n${invalidLinks.join('\n')}`);
+    return;
+  }
+  
+  const oldName = item.nama;
+  item.nama = newName;
+  item.links = newLinks;
+  item.klips = newClips;
+  
+  const mission = missions.find(m => m.id === item.id);
+  if (mission) {
+    mission.text = newName;
+  }
+  
+  const linksCount = newLinks.length;
+  const clipsCount = newClips.length;
+  addLog(`✏️ Item "${oldName}" diupdate menjadi "${newName}" dengan ${linksCount} link dan ${clipsCount} klip`);
+  
+  renderTables();
+  renderMissions();
+  saveToLocalStorage();
+  closeEditItemModal();
+}
+
+function handleEditTableTitle() {
+  if (editingTableIndex === null) return;
+  
+  const newTitle = tableTitleInput.value.trim();
+  if (!newTitle) {
+    alert('Judul tabel wajib diisi!');
+    return;
+  }
+  
+  const oldTitle = tablesData[editingTableIndex].judul;
+  tablesData[editingTableIndex].judul = newTitle;
+  
+  addLog(`🏷️ Tabel "${oldTitle}" diubah menjadi "${newTitle}"`);
+  
+  renderTables();
+  saveToLocalStorage();
+  closeEditTableTitleModal();
+}
+
+function handleAddItemsData() {
+  if (addingToTableIndex === null) return;
+  
+  const itemDataGroups = itemDataGroupsContainer.querySelectorAll('.item-data-group');
+  const newItems = [];
+  
+  let hasError = false;
+  
+  itemDataGroups.forEach((group, index) => {
+    const groupIndex = parseInt(group.dataset.index);
+    
+    const nameInput = group.querySelector('.item-data-name');
+    const itemName = nameInput ? nameInput.value.trim() : '';
+    
+    if (!itemName) {
+      alert(`Nama untuk Item Data ${groupIndex} wajib diisi!`);
+      nameInput.focus();
+      hasError = true;
+      return;
+    }
+    
+    const linkInputs = group.querySelectorAll('.item-data-link');
+    const links = Array.from(linkInputs)
+      .map(input => input.value.trim())
+      .filter(link => link !== '');
+    
+    const clipInputs = group.querySelectorAll('.item-data-clip');
+    const clips = Array.from(clipInputs)
+      .map(textarea => textarea.value.trim())
+      .filter(clip => clip !== '');
+    
+    const invalidLinks = links.filter(link => !isValidUrl(link));
+    if (invalidLinks.length > 0) {
+      alert(`Link tidak valid untuk Item Data ${groupIndex}:\n${invalidLinks.join('\n')}`);
+      hasError = true;
+      return;
+    }
+    
+    newItems.push({
+      id: generateId(),
+      nama: itemName,
+      links: links,
+      klips: clips,
+      sorot: false
+    });
+  });
+  
+  if (hasError) return;
+  
+  if (newItems.length === 0) {
+    alert('Tidak ada item data yang valid untuk ditambahkan!');
+    return;
+  }
+  
+  tablesData[addingToTableIndex].lists.push(...newItems);
+  
+  addLog(`➕ ${newItems.length} item data ditambahkan ke tabel "${tablesData[addingToTableIndex].judul}"`);
+  
+  renderTables();
+  saveToLocalStorage();
+  closeAddItemsModal();
+}
+
+function isValidUrl(string) {
+  if (!string) return false;
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function deleteItem(tableIndex, itemIndex) {
+  if (!confirm('Hapus item ini?')) return;
+  
+  const item = tablesData[tableIndex].lists[itemIndex];
+  
+  missions = missions.filter(m => m.id !== item.id);
+  
+  tablesData[tableIndex].lists.splice(itemIndex, 1);
+  
+  addLog(`🗑️ Item "${item.nama}" dihapus dari tabel`);
+  
+  renderTables();
+  renderMissions();
+  saveToLocalStorage();
+}
+
+function addTable() {
+  const tableName = prompt('Nama tabel baru:', `Tabel ${tablesData.length + 1}`);
+  if (tableName && tableName.trim()) {
+    tablesData.push({
+      judul: tableName.trim(),
+      lists: []
+    });
+    addLog(`📋 Tabel baru "${tableName.trim()}" ditambahkan`);
+    renderTables();
+    saveToLocalStorage();
+  }
+}
+
+function deleteTable(tableIndex) {
+  if (confirm(`Hapus tabel "${tablesData[tableIndex].judul}"?`)) {
+    const tableName = tablesData[tableIndex].judul;
+    
+    tablesData[tableIndex].lists.forEach(item => {
+      missions = missions.filter(m => m.id !== item.id);
+    });
+    
+    tablesData.splice(tableIndex, 1);
+    addLog(`🗑️ Tabel "${tableName}" dihapus`);
+    renderTables();
+    renderMissions();
+    saveToLocalStorage();
+  }
+}
+
+// GitHub Functions
+function showGithubStatus(message, type = 'success') {
+  githubStatus.textContent = message;
+  githubStatus.className = `github-status ${type}`;
+  githubStatus.style.display = 'block';
+  
+  if (type !== 'loading') {
+    setTimeout(() => {
+      githubStatus.style.display = 'none';
+    }, 5000);
+  }
+}
+
+async function getGitHubFileSHA() {
+  const token = githubToken.value.trim();
+  const repo = githubRepo.value.trim();
+  const path = githubPath.value.trim();
+  const branch = githubBranch.value.trim() || 'main';
+  
+  if (!token || !repo || !path) {
+    showGithubStatus('Token, Repository, dan Path diperlukan!', 'error');
+    return null;
+  }
+  
+  try {
+    const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`;
+    
+    const response = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+    
+    if (response.status === 404) {
+      return null;
+    }
+    
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data.sha;
+  } catch (error) {
+    console.error('Error getting file SHA:', error);
+    showGithubStatus(`Error: ${error.message}`, 'error');
+    return null;
+  }
+}
+
+async function exportToGitHub() {
+  const token = githubToken.value.trim();
+  const repo = githubRepo.value.trim();
+  const path = githubPath.value.trim();
+  const branch = githubBranch.value.trim() || 'main';
+  
+  if (!token || !repo || !path) {
+    showGithubStatus('Token, Repository, dan Path diperlukan!', 'error');
+    return;
+  }
+  
+  localStorage.setItem('missionBoard_githubToken', token);
+  localStorage.setItem('missionBoard_githubRepo', repo);
+  localStorage.setItem('missionBoard_githubPath', path);
+  localStorage.setItem('missionBoard_githubBranch', branch);
+  
+  showGithubStatus('Mengekspor ke GitHub...', 'loading');
+  
+  try {
+    const dataToExport = {
+      tables: tablesData,
+      missions: missions,
+      exportDate: getCurrentDateTime(),
+      version: '2.0'
+    };
+    
+    const content = JSON.stringify(dataToExport, null, 2);
+    const encodedContent = btoa(unescape(encodeURIComponent(content)));
+    
+    const sha = await getGitHubFileSHA();
+    
+    const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
+    
+    const requestBody = {
+      message: `Mission Board Export - ${new Date().toLocaleString()}`,
+      content: encodedContent,
+      branch: branch
+    };
+    
+    if (sha) {
+      requestBody.sha = sha;
+    }
+    
+    const response = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `GitHub API error: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    showGithubStatus(`✅ Berhasil diekspor! Commit: ${result.commit.sha.substring(0, 7)}`, 'success');
+    addLog(`☁️ Data berhasil diekspor ke GitHub: ${repo}/${path}`);
+    
+  } catch (error) {
+    console.error('Error exporting to GitHub:', error);
+    showGithubStatus(`❌ Error: ${error.message}`, 'error');
+    addLog(`❌ Gagal mengekspor ke GitHub: ${error.message}`);
+  }
+}
+
+async function importFromGitHub() {
+  const token = githubToken.value.trim();
+  const repo = githubRepo.value.trim();
+  const path = githubPath.value.trim();
+  const branch = githubBranch.value.trim() || 'main';
+  
+  if (!token || !repo || !path) {
+    showGithubStatus('Token, Repository, dan Path diperlukan!', 'error');
+    return;
+  }
+  
+  if (!confirm('Impor data dari GitHub? Data saat ini akan ditimpa.')) {
+    return;
+  }
+  
+  localStorage.setItem('missionBoard_githubToken', token);
+  localStorage.setItem('missionBoard_githubRepo', repo);
+  localStorage.setItem('missionBoard_githubPath', path);
+  localStorage.setItem('missionBoard_githubBranch', branch);
+  
+  showGithubStatus('Mengimpor dari GitHub...', 'loading');
+  
+  try {
+    const apiUrl = `https://api.github.com/repos/${repo}/contents/${path}?ref=${branch}`;
+    
+    const response = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('File tidak ditemukan di repository');
+      }
+      throw new Error(`GitHub API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    const decodedContent = decodeURIComponent(escape(atob(data.content)));
+    const importedData = JSON.parse(decodedContent);
+    
+    if (!importedData.tables || !Array.isArray(importedData.tables)) {
+      throw new Error('Format file tidak valid!');
+    }
+    
+    tablesData = importedData.tables;
+    
+    if (importedData.missions && Array.isArray(importedData.missions)) {
+      missions = importedData.missions;
+    } else {
+      missions = [];
+    }
+    
+    saveToLocalStorage();
+    renderTables();
+    renderMissions();
+    
+    showGithubStatus(`✅ Berhasil diimpor! ${tablesData.length} tabel`, 'success');
+    addLog(`☁️ Data berhasil diimpor dari GitHub: ${repo}/${path}`);
+    
+  } catch (error) {
+    console.error('Error importing from GitHub:', error);
+    showGithubStatus(`❌ Error: ${error.message}`, 'error');
+    addLog(`❌ Gagal mengimpor dari GitHub: ${error.message}`);
+  }
+}
+
+function exportData() {
+  const dataToExport = {
+    tables: tablesData,
+    missions: missions,
+    exportDate: getCurrentDateTime(),
+    version: '2.0'
+  };
+  
+  const dataStr = JSON.stringify(dataToExport, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+  
+  const url = URL.createObjectURL(dataBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mission-board-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  addLog('💾 Data berhasil diekspor ke file JSON');
+}
+
+function importData() {
+  fileInputWrapper.style.display = 'block';
+  importFileInput.click();
+}
+
+function handleFileImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const importedData = JSON.parse(e.target.result);
+      
+      if (!importedData.tables || !Array.isArray(importedData.tables)) {
+        alert('Format file tidak valid! File harus berisi data tabel.');
+        return;
+      }
+      
+      if (!confirm(`Impor ${importedData.tables.length} tabel? Data saat ini akan ditimpa.`)) {
+        return;
+      }
+      
+      tablesData = importedData.tables;
+      
+      if (importedData.missions && Array.isArray(importedData.missions)) {
+        missions = importedData.missions;
+      } else {
+        missions = [];
+      }
+      
+      saveToLocalStorage();
+      renderTables();
+      renderMissions();
+      
+      addLog(`💾 Data berhasil diimpor: ${tablesData.length} tabel`);
+      
+      fileInputWrapper.style.display = 'none';
+      importFileInput.value = '';
+      
+    } catch (error) {
+      console.error('Error importing data:', error);
+      alert('Gagal mengimpor data. File mungkin rusak atau format tidak sesuai.');
+    }
+  };
+  
+  reader.readAsText(file);
+}
+
+function resetAllData() {
+  if (!confirm('HAPUS SEMUA DATA?\n\nAksi ini akan menghapus semua tabel, item, dan misi. Tindakan ini tidak dapat dibatalkan.')) {
+    return;
+  }
+  
+  if (!confirm('Yakin ingin menghapus SEMUA data? Tekan OK untuk melanjutkan.')) {
+    return;
+  }
+  
+  tablesData = [];
+  missions = [];
+  
+  saveToLocalStorage();
+  renderTables();
+  renderMissions();
+  
+  addLog('🗑️ Semua data telah direset');
+}
+
+// Debug Functions
+function logNextResets() {
+  console.log('=== DEBUG: Next Reset Times ===');
+  missions.forEach(mission => {
+    if (mission.interval) {
+      const nextReset = calculateNextReset(mission);
+      const now = new Date();
+      const diff = nextReset ? nextReset - now : 0;
+      
+      console.log(`Mission: ${mission.text.substring(0, 20)}...`);
+      console.log(`  ID: ${mission.id}`);
+      console.log(`  Done: ${mission.done}`);
+      console.log(`  Interval: ${mission.interval.value} ${mission.interval.unit}`);
+      console.log(`  Reset Option: ${mission.interval.resetOption}`);
+      console.log(`  Reset Time: ${mission.interval.resetTime || 'N/A'} ${mission.interval.timezone || 'WIB'}`);
+      console.log(`  Next Reset: ${nextReset ? nextReset.toLocaleString('id-ID') : 'N/A'}`);
+      console.log(`  Time Remaining: ${formatTimeRemaining(nextReset)}`);
+      console.log(`  Should Reset: ${nextReset && nextReset <= now ? 'YES' : 'NO'}`);
+      console.log('---');
+    }
+  });
+}
+
+// Debug function untuk memantau waktu reset
+function debugMissionResets() {
+  console.log('=== DEBUG: Mission Reset Status ===');
+  missions.forEach((mission, index) => {
+    if (mission.interval) {
+      const nextReset = calculateNextReset(mission);
+      const now = new Date();
+      const shouldReset = nextReset && nextReset <= now;
+      
+      console.log(`${index + 1}. ${mission.text.substring(0, 30)}...`);
+      console.log(`   ID: ${mission.id}`);
+      console.log(`   Status: ${mission.done ? 'Selesai' : 'Pending'}`);
+      console.log(`   Interval: ${mission.interval.value} ${mission.interval.unit}`);
+      console.log(`   Reset Option: ${mission.interval.resetOption}`);
+      console.log(`   Next Reset: ${nextReset ? nextReset.toLocaleString('id-ID') : 'N/A'}`);
+      console.log(`   Should Reset Now: ${shouldReset ? 'YES' : 'NO'}`);
+      console.log(`   Time Until Reset: ${formatTimeRemaining(nextReset)}`);
+      console.log('---');
+    }
+  });
+}
+
+// Local Storage Functions
+function saveToLocalStorage() {
+  try {
+    localStorage.setItem('missionBoard_missions', JSON.stringify(missions));
+    localStorage.setItem('missionBoard_tables', JSON.stringify(tablesData));
+    localStorage.setItem('missionBoard_timezone', timezoneSelect.value);
+  } catch (e) {
+    console.error('Gagal menyimpan ke localStorage:', e);
+  }
+}
+
+function loadFromLocalStorage() {
+  try {
+    const savedMissions = localStorage.getItem('missionBoard_missions');
+    const savedTables = localStorage.getItem('missionBoard_tables');
+    const savedTimezone = localStorage.getItem('missionBoard_timezone');
+    
+    if (savedMissions) missions = JSON.parse(savedMissions);
+    if (savedTables) tablesData = JSON.parse(savedTables);
+    if (savedTimezone) timezoneSelect.value = savedTimezone;
+    
+    migrateOldDataStructure();
+  } catch (e) {
+    console.error('Gagal memuat dari localStorage:', e);
+  }
+}
+
+function migrateOldDataStructure() {
+  if (!localStorage.getItem('missionBoard_tables') && tablesData.length === 0) {
+    tablesData = [{
+      judul: "Morph",
+      lists: [
+        { 
+          id: "mesba8cd0fc44ol5mwwb", 
+          nama: "Check in", 
+          links: [
+            "https://hub.morphl2.io/loyalty",
+            "https://hub.morphl2.io/loyalty/extra"
+          ],
+          klips: [],
+          sorot: false
+        },
+        { 
+          id: "met9l2t8gn9gzq35yzi", 
+          nama: "Reff", 
+          links: [
+            "https://hub.morphl2.io/loyalty?referral_code=4JFCVSQ4"
+          ],
+          klips: [],
+          sorot: false
+        },
+        { 
+          id: "mew940yhaey40r1pq9j", 
+          nama: "Morfi Swap", 
+          links: [
+            "https://app.morfi.io/swap",
+            "https://app.morfi.io/pool",
+            "https://app.morfi.io/farm"
+          ],
+          klips: [],
+          sorot: false
+        }
+      ]
+    }];
+    
+    saveToLocalStorage();
+  } else {
+    tablesData.forEach(table => {
+      table.lists.forEach(item => {
+        if (!item.klips) {
+          item.klips = [];
+        }
+      });
+    });
+    
+    missions.forEach(mission => {
+      if (mission.interval && !mission.interval.resetOption) {
+        mission.interval.resetOption = 'flexible';
+      }
+    });
+  }
+}
+
+// ===== PERBAIKAN UTAMA: Initialize dengan Auto Reset Checker =====
+function init() {
+  loadFromLocalStorage();
+  renderTables();
+  renderMissions();
+  
+  // Event Listeners untuk tab
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabId = tab.getAttribute('data-tab');
+      
+      document.querySelectorAll('.tab, .tab-content').forEach(element => {
+        element.classList.remove('active');
+      });
+      
+      tab.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    });
+  });
+  
+  // Settings button
+  const settingsBtn = document.querySelector('.settings-btn');
+  settingsBtn.addEventListener('click', openSettingsModal);
+  
+  // Search functionality
+  searchInput.addEventListener('input', (e) => {
+    searchQuery = e.target.value;
+    searchClearBtn.style.display = searchQuery ? 'flex' : 'none';
+    renderTables();
+  });
+  
+  searchClearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    searchQuery = '';
+    searchClearBtn.style.display = 'none';
+    renderTables();
+  });
+  
+  addTableBtn.addEventListener('click', addTable);
+  
+  // Sorot Options Modal event listeners
+  document.getElementById('closeSorotModal').addEventListener('click', closeSorotOptionsModal);
+  document.getElementById('cancelSorotBtn').addEventListener('click', closeSorotOptionsModal);
+  
+  document.querySelectorAll('.sorot-type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sorot-type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentSorotType = btn.dataset.type;
+      
+      if (currentSorotType === 'berulang') {
+        document.getElementById('intervalSettings').style.display = 'block';
+        
+        // Set default berdasarkan unit
+        const unit = document.getElementById('intervalUnit').value;
+        if (unit === 'hours') {
+          resetTimeRow.style.display = 'none';
+          resetTimeNote.style.display = 'none';
+          intervalJamOptions.style.display = 'block';
+          intervalDayWeekOptions.style.display = 'none';
+        } else {
+          resetTimeRow.style.display = 'flex';
+          resetTimeNote.style.display = 'block';
+          intervalJamOptions.style.display = 'none';
+          intervalDayWeekOptions.style.display = 'block';
+        }
+      } else {
+        document.getElementById('intervalSettings').style.display = 'none';
+      }
+    });
+  });
+  
+  intervalUnitSelect.addEventListener('change', () => {
+    const unit = intervalUnitSelect.value;
+    
+    if (unit === 'hours') {
+      resetTimeRow.style.display = 'none';
+      resetTimeNote.style.display = 'none';
+      intervalJamOptions.style.display = 'block';
+      intervalDayWeekOptions.style.display = 'none';
+    } else {
+      resetTimeRow.style.display = 'flex';
+      resetTimeNote.style.display = 'block';
+      intervalJamOptions.style.display = 'none';
+      intervalDayWeekOptions.style.display = 'block';
+    }
+  });
+  
+  resetHourInput.addEventListener('input', function() {
+    let value = this.value.replace(/\D/g, '');
+    if (value.length > 2) value = value.slice(0, 2);
+    if (value > 23) value = '23';
+    this.value = value;
+    
+    if (value.length === 2) {
+      resetMinuteInput.focus();
+    }
+  });
+  
+  resetMinuteInput.addEventListener('input', function() {
+    let value = this.value.replace(/\D/g, '');
+    if (value.length > 2) value = value.slice(0, 2);
+    if (value > 59) value = '59';
+    this.value = value;
+  });
+  
+  document.getElementById('saveSorotBtn').addEventListener('click', handleSorotSelection);
+  
+  sorotOptionsModal.addEventListener('click', (e) => {
+    if (e.target === sorotOptionsModal) {
+      closeSorotOptionsModal();
+    }
+  });
+  
+  // Edit Item Modal event listeners
+  document.getElementById('closeEditItemModal').addEventListener('click', closeEditItemModal);
+  document.getElementById('cancelEditItemBtn').addEventListener('click', closeEditItemModal);
+  document.getElementById('saveEditItemBtn').addEventListener('click', handleEditItemData);
+  
+  editItemModal.addEventListener('click', (e) => {
+    if (e.target === editItemModal) {
+      closeEditItemModal();
+    }
+  });
+  
+  addLinkBtn.addEventListener('click', () => {
+    addLinkInput('', linksContainer.children.length);
+  });
+  
+  addClipBtnEdit.addEventListener('click', () => {
+    addClipInput('', clipsContainer.children.length);
+  });
+  
+  // Edit Table Title Modal event listeners
+  document.getElementById('closeEditTableTitleModal').addEventListener('click', closeEditTableTitleModal);
+  document.getElementById('cancelEditTableTitleBtn').addEventListener('click', closeEditTableTitleModal);
+  document.getElementById('saveEditTableTitleBtn').addEventListener('click', handleEditTableTitle);
+  
+  editTableTitleModal.addEventListener('click', (e) => {
+    if (e.target === editTableTitleModal) {
+      closeEditTableTitleModal();
+    }
+  });
+  
+  // Add Items Modal event listeners
+  document.getElementById('closeAddItemsModal').addEventListener('click', closeAddItemsModal);
+  document.getElementById('cancelAddItemsBtn').addEventListener('click', closeAddItemsModal);
+  document.getElementById('saveAddItemsBtn').addEventListener('click', handleAddItemsData);
+  
+  addItemsModal.addEventListener('click', (e) => {
+    if (e.target === addItemsModal) {
+      closeAddItemsModal();
+    }
+  });
+  
+  addItemDataBtn.addEventListener('click', () => {
+    const itemDataGroups = itemDataGroupsContainer.querySelectorAll('.item-data-group');
+    const newIndex = itemDataGroups.length + 1;
+    addItemDataGroup(newIndex);
+  });
+  
+  // Settings Modal event listeners
+  document.getElementById('closeSettingsModal').addEventListener('click', closeSettingsModal);
+  document.getElementById('closeSettingsFooterBtn').addEventListener('click', closeSettingsModal);
+  
+  toggleGithubConfigBtn.addEventListener('click', () => {
+    githubConfig.classList.toggle('hidden');
+  });
+  
+  githubExportBtn.addEventListener('click', exportToGitHub);
+  githubImportBtn.addEventListener('click', importFromGitHub);
+  
+  // Full Size Modal event listeners
+  closeFullsizeModalBtn.addEventListener('click', closeFullsizeModal);
+  closeFullsizeFooterBtn.addEventListener('click', closeFullsizeModal);
+  
+  fullsizeModal.addEventListener('click', (e) => {
+    if (e.target === fullsizeModal) {
+      closeFullsizeModal();
+    }
+  });
+  
+  const fullsizeNotes = document.getElementById('fullsizeNotes');
+  if (fullsizeNotes) {
+    let notesTimeout;
+    fullsizeNotes.addEventListener('input', function() {
+      clearTimeout(notesTimeout);
+      notesTimeout = setTimeout(() => {
+        const missionId = this.dataset.missionId;
+        if (missionId && this.value.trim()) {
+          localStorage.setItem(`mission_notes_${missionId}`, this.value.trim());
+        } else if (missionId && !this.value.trim()) {
+          localStorage.removeItem(`mission_notes_${missionId}`);
+        }
+      }, 1000);
+    });
+  }
+  
+  timezoneSelect.addEventListener('change', () => {
+    saveToLocalStorage();
+    renderMissions();
+  });
+  
+  exportDataBtn.addEventListener('click', exportData);
+  importDataBtn.addEventListener('click', importData);
+  importFileInput.addEventListener('change', handleFileImport);
+  
+  resetDataBtn.addEventListener('click', resetAllData);
+  
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeSorotOptionsModal();
+      closeEditItemModal();
+      closeEditTableTitleModal();
+      closeAddItemsModal();
+      closeSettingsModal();
+      closeFullsizeModal();
+    }
+  });
+  
+  // ===== PERBAIKAN UTAMA: Start Auto Reset Checker =====
+  startAutoResetChecker();
+  
+  // Debug logging setiap 5 menit
+  setInterval(() => {
+    console.log(`[${getCurrentTime()}] Auto-checking missions...`);
+    debugMissionResets();
+  }, 300000);
+  
+  addLog(`🚀 Aplikasi dimulai pada ${getCurrentTime()}`);
+}
+
+// Ensure DOM is fully loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
