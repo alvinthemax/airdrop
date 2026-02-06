@@ -290,6 +290,15 @@
             "https://taskon.xyz/HeliosLayer1?invite_code=XqiydXYR"
           ],
           "klips": []
+        },
+        {
+          "id": "id_lwk1exmru_mjkmldrv",
+          "nama": "Link Kucoin UID",
+          "links": [
+            "https://app.helioschain.network/"
+          ],
+          "klips": [],
+          "sorot": false
         }
       ]
     },
@@ -401,7 +410,7 @@
           "nama": "Chat Ai",
           "aksi": "berulang",
           "status": "berlangsung",
-          "sorot": true,
+          "sorot": false,
           "links": [
             "https://askjune.ai/app/chat"
           ],
@@ -1281,6 +1290,16 @@
             "https://www.bmwweb.biz/activity/trading-competition/spot-somi-listing-campaign"
           ],
           "klips": []
+        },
+        {
+          "id": "id_5yvw3iaot_mjmuxkyt",
+          "nama": "Guess the Word",
+          "links": [
+            "https://www.bmwweb.biz/id/activity/word-of-the-day/G1207549688531890177?ref=CPA_00NL4V9SAO",
+            "https://www.bmwweb.biz/activity/word-of-the-day/G1207549688531890177?ref=CPA_00IBVSSVAG"
+          ],
+          "klips": [],
+          "sorot": false
         }
       ]
     },
@@ -1482,7 +1501,7 @@
           "nama": "Quest",
           "aksi": "berulang",
           "status": "berlangsung",
-          "sorot": true,
+          "sorot": false,
           "links": [
             "https://cedomis.xyz/dashboard"
           ],
@@ -3341,7 +3360,29 @@
           "links": [
             "https://app.heyelsa.ai/referral/1ZHAVZ"
           ],
-          "klips": []
+          "klips": [
+            "1ZHAVZ"
+          ]
+        },
+        {
+          "id": "id_287yfbvsx_mjmv1awt",
+          "nama": "Dashboard",
+          "links": [
+            "https://app.heyelsa.ai/"
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_c6swrd6wm_mjnqom14",
+          "nama": "Reff Pribadi",
+          "links": [
+            "https://app.heyelsa.ai/referral/VKZXY4"
+          ],
+          "klips": [
+            "VKZXY4"
+          ],
+          "sorot": false
         }
       ]
     },
@@ -4064,7 +4105,7 @@
           "nama": "Map",
           "aksi": "berulang",
           "status": "berlangsung",
-          "sorot": true,
+          "sorot": false,
           "links": [
             "https://neuraverse.neuraprotocol.io/"
           ],
@@ -4285,27 +4326,39 @@
       ]
     },
     {
-      "judul": "Alkimiya",
+      "judul": "Alkimiya 42",
       "lists": [
         {
           "id": "mgek1zmposz895heav",
-          "nama": "Item Baru",
+          "nama": "Dashboard",
           "aksi": "satu kali",
           "status": "belum dimulai",
           "sorot": false,
           "links": [
-            "http://42.space"
+            "http://42.space",
+            "https://beta.42.space/"
           ],
           "klips": []
         },
         {
           "id": "mgek20clxo4pmvh1zdn",
-          "nama": "Item Baru",
+          "nama": "Reff 1",
           "aksi": "satu kali",
           "status": "belum dimulai",
           "sorot": false,
-          "links": [],
+          "links": [
+            "https://42.space/?ref=HgNok86K"
+          ],
           "klips": []
+        },
+        {
+          "id": "id_9uvgdsy8x_mjqebm99",
+          "nama": "Address 1",
+          "links": [],
+          "klips": [
+            "0x2e50799b5bad6DE3dA34a228aF21cAD62905A1C0"
+          ],
+          "sorot": false
         }
       ]
     },
@@ -4434,6 +4487,13 @@
           "sorot": false,
           "links": [],
           "klips": []
+        },
+        {
+          "id": "id_3wxbc9c8h_mjr4eqgc",
+          "nama": "Cek Elig Register",
+          "links": [],
+          "klips": [],
+          "sorot": false
         }
       ]
     },
@@ -4738,6 +4798,33 @@
             "bd9edcbb"
           ],
           "sorot": false
+        },
+        {
+          "id": "id_o87knhzyh_mjkp18qz",
+          "nama": "Testnet Dashboard",
+          "links": [
+            "https://apps.datahaven.xyz/testnet"
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_l7ellxg5r_mjmofv67",
+          "nama": "Claim Faucet",
+          "links": [
+            "https://apps.datahaven.xyz/testnet/faucet"
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_jsofm2dhf_mjo8572a",
+          "nama": "Testnet App",
+          "links": [
+            "https://datahaven.app/testnet"
+          ],
+          "klips": [],
+          "sorot": true
         }
       ]
     },
@@ -4760,7 +4847,7 @@
           "nama": "Checkin App",
           "aksi": "berulang",
           "status": "berlangsung",
-          "sorot": true,
+          "sorot": false,
           "links": [],
           "klips": []
         },
@@ -4769,7 +4856,7 @@
           "nama": "Claim Faucet",
           "aksi": "berulang",
           "status": "berlangsung",
-          "sorot": true,
+          "sorot": false,
           "links": [
             "https://testnet.gurufin.com/faucet"
           ],
@@ -4796,6 +4883,15 @@
             "!verify 0xb9FE4C421A805b36f2478F4c4f32b5713121a6EE"
           ],
           "sorot": false
+        },
+        {
+          "id": "id_gs5t0dqdb_mlarol7u",
+          "nama": "S2 Daily Checkin",
+          "links": [
+            "https://portal.gurufin.com/home"
+          ],
+          "klips": [],
+          "sorot": true
         }
       ]
     },
@@ -4834,11 +4930,20 @@
           "nama": "Check-in",
           "aksi": "berulang",
           "status": "berlangsung",
-          "sorot": true,
+          "sorot": false,
           "links": [
             "https://rewards.canopynetwork.org"
           ],
           "klips": []
+        },
+        {
+          "id": "id_t08xzjvmd_mjo32ui6",
+          "nama": "Get Eligible roles in DC",
+          "links": [
+            "https://discord.com/invite/canopynetwork"
+          ],
+          "klips": [],
+          "sorot": false
         }
       ]
     },
@@ -4873,28 +4978,375 @@
           "klips": []
         }
       ]
+    },
+    {
+      "judul": "Zenchain Testnet",
+      "lists": [
+        {
+          "id": "id_kt7ufgop5_mjkmoxqw",
+          "nama": "Mint .ztc username",
+          "links": [
+            "https://zns.bio/"
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_sm7c13n5y_mjkmsjfb",
+          "nama": "ZenGuild",
+          "links": [
+            "https://era.guild.xyz/zenchain"
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_a7ffajz0b_mjkn0mip",
+          "nama": "ZenQuest Dashboard",
+          "links": [
+            "https://zenquest.zenchain.io"
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_3ky4lvlm0_mjkn8mq4",
+          "nama": "ZenQuest",
+          "links": [
+            "https://zenquest.zenchain.io/quests"
+          ],
+          "klips": [],
+          "sorot": false
+        }
+      ]
+    },
+    {
+      "judul": "Espresso Airdrop",
+      "lists": [
+        {
+          "id": "id_4snzhce5m_mjknxpxp",
+          "nama": "Claim Registration",
+          "links": [
+            "https://claim.espresso.foundation/registration"
+          ],
+          "klips": [],
+          "sorot": false
+        }
+      ]
+    },
+    {
+      "judul": "Billions Network",
+      "lists": [
+        {
+          "id": "id_ggzp396zk_mjktxj7h",
+          "nama": "Cek App",
+          "links": [],
+          "klips": [],
+          "sorot": true
+        }
+      ]
+    },
+    {
+      "judul": "Tria",
+      "lists": [
+        {
+          "id": "id_swxt6fmau_mjl3fxkq",
+          "nama": "Reff Pribadi",
+          "links": [
+            "https://app.tria.so?accessCode=NJ8G68VZ6K"
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_2q9xwcugk_mjl3hmgv",
+          "nama": "Base ETH Address",
+          "links": [],
+          "klips": [
+            "0x99791c5cC965BadE1218cFCdFc9C7DAE2E5b20A8"
+          ],
+          "sorot": false
+        },
+        {
+          "id": "id_otfgu5vne_mjl4djqu",
+          "nama": "Tria App",
+          "links": [],
+          "klips": [],
+          "sorot": true
+        }
+      ]
+    },
+    {
+      "judul": "Allscale",
+      "lists": [
+        {
+          "id": "id_qu26jlsgv_mjmbuycd",
+          "nama": "Export Wallet",
+          "links": [],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_7w4e3gbrk_mjnm4p3v",
+          "nama": "Reff Pribadi",
+          "links": [
+            "https://app.allscale.io/pay/register?code=lFFVRK48kqTTzjSYPdRQ-MFzQRmUWkHwOAx9GI59b0hq2mQc3Khaq-XpbuXtlmrrs37PuQ=="
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_pfueb0g7r_mjnmhzv6",
+          "nama": "Reff 1",
+          "links": [
+            "https://app.allscale.io/pay/register?code=o7dd277LF0S43Pu8q1fkNSzsQFPuJnyPSZw_lPtiRN77LeQJHXiJHAVoasXjuuNRyRo1ZQ=="
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_uaiybpc7w_mjnmoz84",
+          "nama": "Invoices",
+          "links": [
+            "https://app.allscale.io/pay/invoice/694f3752b12a2c7bd59f47bc",
+            "https://app.allscale.io/pay/invoice/694f3bbeab9c14360a6aaeaa"
+          ],
+          "klips": [
+            "untuk pribadi",
+            "Untuk airdrop1"
+          ],
+          "sorot": false
+        },
+        {
+          "id": "id_5ouhou8o0_mjnmqasl",
+          "nama": "Checkin",
+          "links": [
+            "https://app.allscale.io/pay"
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_4dgwcov99_mjnmxvg6",
+          "nama": "Address BSC Airdrop1",
+          "links": [],
+          "klips": [
+            "0xF4D95AAeee2dA49cF68b8a265D159C8463C77a33"
+          ],
+          "sorot": false
+        },
+        {
+          "id": "id_b66hr8hzd_mjnosger",
+          "nama": "Duit $2.55 nyangkut anjing",
+          "links": [],
+          "klips": [],
+          "sorot": true
+        }
+      ]
+    },
+    {
+      "judul": "Push Chain",
+      "lists": []
+    },
+    {
+      "judul": "Fair Shares",
+      "lists": [
+        {
+          "id": "id_oqhftix7t_mjnpvxpz",
+          "nama": "Reff 1",
+          "links": [
+            "https://app.fairshares.io/waitlist?AccessCode=61xghmlb"
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_9vz464njv_mjnqe676",
+          "nama": "Dashboard",
+          "links": [
+            "https://app.fairshares.io/dashboard"
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_aqf7eqi2i_mjothn2i",
+          "nama": "Reff Pribadi",
+          "links": [
+            "https://app.fairshares.io/waitlist?AccessCode=5fsngcuh"
+          ],
+          "klips": [],
+          "sorot": false
+        }
+      ]
+    },
+    {
+      "judul": "Surf",
+      "lists": [
+        {
+          "id": "id_p4usq8ogd_mjoucwq3",
+          "nama": "Daily Chat",
+          "links": [
+            "https://asksurf.ai/chat"
+          ],
+          "klips": [],
+          "sorot": true
+        },
+        {
+          "id": "id_fe9ric18m_mjoudaws",
+          "nama": "Reff 1",
+          "links": [
+            "https://asksurf.ai/?r=G7ZL0303LDD1"
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_pi7018d1g_mjoudp7z",
+          "nama": "Monitor Market",
+          "links": [
+            "https://asksurf.ai/hub"
+          ],
+          "klips": [],
+          "sorot": false
+        }
+      ]
+    },
+    {
+      "judul": "Glider Fi",
+      "lists": [
+        {
+          "id": "id_dhbnb13hu_mjqdzv29",
+          "nama": "Reff 1",
+          "links": [
+            "https://glider.fi/r/a6aaba0f"
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_cznip0480_mjqe0gb8",
+          "nama": "Dashboard",
+          "links": [
+            "https://glider.fi/dashboard"
+          ],
+          "klips": [],
+          "sorot": false
+        }
+      ]
+    },
+    {
+      "judul": "Tea",
+      "lists": []
+    },
+    {
+      "judul": "DataHive",
+      "lists": [
+        {
+          "id": "id_cl3yxq9gs_mjout3be",
+          "nama": "Daftar",
+          "links": [],
+          "klips": [],
+          "sorot": true
+        }
+      ]
+    },
+    {
+      "judul": "Celes Testnet",
+      "lists": [
+        {
+          "id": "id_ois0e8j42_mjps225d",
+          "nama": "Daftar",
+          "links": [],
+          "klips": [],
+          "sorot": true
+        }
+      ]
+    },
+    {
+      "judul": "NeuraKnight by Neura",
+      "lists": [
+        {
+          "id": "id_dzua6uocz_mjqbxyh3",
+          "nama": "Dashboard",
+          "links": [
+            "https://www.neuraknights.gg/home"
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_nygwo6cj8_mjqdikma",
+          "nama": "Reff 1",
+          "links": [
+            "https://www.neuraknights.gg?startparam=sp6vzezz8qrxl1e6yxr3t13p"
+          ],
+          "klips": [],
+          "sorot": false
+        },
+        {
+          "id": "id_jqki43pvm_mjqdk25h",
+          "nama": "Daily Claim",
+          "links": [
+            "https://www.neuraknights.gg/home"
+          ],
+          "klips": [],
+          "sorot": false
+        }
+      ]
+    },
+    {
+      "judul": "Config SSH",
+      "lists": [
+        {
+          "id": "id_brwj3b3jc_mjyszznc",
+          "nama": "Checkin",
+          "links": [
+            "https://www.freevpn.us/pages/dashboard.html",
+            "https://www.freevpn.us/"
+          ],
+          "klips": [],
+          "sorot": true
+        }
+      ]
+    },
+    {
+      "judul": "MyTelkomsel",
+      "lists": [
+        {
+          "id": "id_wctkk2nxu_mlap7pmj",
+          "nama": "Daily Stamp",
+          "links": [
+            "https://my.telkomsel.com/app/get-reward/daily-login"
+          ],
+          "klips": [
+            "Cek bagian reward, ganti nomor"
+          ],
+          "sorot": true
+        }
+      ]
     }
   ],
   "missions": [
     {
       "id": "mfo7a10o3f9hxnj44tv",
       "text": "Portal",
-      "done": true,
+      "done": false,
       "createdAt": "2025-12-24T02:53:14.693Z",
       "interval": {
         "value": 1,
         "unit": "days",
         "resetTime": "19:00",
         "timezone": "WIB",
-        "resetOption": "flexible"
+        "resetOption": "fixed"
       },
-      "nextReset": "2025-12-24T12:00:00.000Z",
-      "lastReset": "2025-12-24T05:04:52.379Z"
+      "nextReset": "2026-02-07T12:00:00.000Z",
+      "lastReset": "2026-02-06T12:50:47.704Z"
     },
     {
       "id": "mj1v3dmmnfz2q3xzlnn",
       "text": "Petra Check-in",
-      "done": true,
+      "done": false,
       "createdAt": "2025-12-24T05:05:32.445Z",
       "interval": {
         "value": 1,
@@ -4903,13 +5355,13 @@
         "timezone": "UTC",
         "resetOption": "flexible"
       },
-      "nextReset": "2025-12-25T00:00:00.000Z",
-      "lastReset": "2025-12-24T10:16:48.950Z"
+      "nextReset": "2026-02-07T00:00:00.000Z",
+      "lastReset": "2026-02-06T09:43:30.271Z"
     },
     {
       "id": "mfzg4fnh1i2l7x1hv13",
       "text": "Dashboard",
-      "done": true,
+      "done": false,
       "createdAt": "2025-12-24T09:40:06.894Z",
       "interval": {
         "value": 1,
@@ -4918,28 +5370,13 @@
         "timezone": "UTC",
         "resetOption": "flexible"
       },
-      "nextReset": "2025-12-25T00:00:00.000Z",
-      "lastReset": "2025-12-24T10:01:52.243Z"
-    },
-    {
-      "id": "mgez9k9r8450s1r54ca",
-      "text": "Map",
-      "done": true,
-      "createdAt": "2025-12-24T09:40:28.531Z",
-      "interval": {
-        "value": 1,
-        "unit": "days",
-        "resetTime": "00:00",
-        "timezone": "UTC",
-        "resetOption": "flexible"
-      },
-      "nextReset": "2025-12-25T00:00:00.000Z",
-      "lastReset": "2025-12-24T10:02:07.983Z"
+      "nextReset": "2026-02-07T00:00:00.000Z",
+      "lastReset": "2026-02-06T09:43:30.271Z"
     },
     {
       "id": "mhmwa212vp07yqyr6nk",
       "text": "Daily Checkin",
-      "done": true,
+      "done": false,
       "createdAt": "2025-12-24T10:05:58.011Z",
       "interval": {
         "value": 1,
@@ -4948,58 +5385,13 @@
         "timezone": "UTC",
         "resetOption": "flexible"
       },
-      "nextReset": "2025-12-25T00:00:00.000Z",
-      "lastReset": "2025-12-24T10:05:59.907Z"
-    },
-    {
-      "id": "mesfihhu4rb0donlq2",
-      "text": "Chat Ai",
-      "done": true,
-      "createdAt": "2025-12-24T10:10:44.424Z",
-      "interval": {
-        "value": 1,
-        "unit": "days",
-        "resetTime": "00:00",
-        "timezone": "UTC",
-        "resetOption": "flexible"
-      },
-      "nextReset": "2025-12-25T00:00:00.000Z",
-      "lastReset": "2025-12-24T10:15:12.338Z"
-    },
-    {
-      "id": "miuu9ozi4nm05lkw20r",
-      "text": "Check-in",
-      "done": true,
-      "createdAt": "2025-12-24T10:12:46.874Z",
-      "interval": {
-        "value": 1,
-        "unit": "days",
-        "resetTime": "00:00",
-        "timezone": "UTC",
-        "resetOption": "flexible"
-      },
-      "nextReset": "2025-12-25T00:00:00.000Z",
-      "lastReset": "2025-12-24T10:15:13.726Z"
-    },
-    {
-      "id": "mis96745ni68kmrbxj",
-      "text": "Checkin App",
-      "done": true,
-      "createdAt": "2025-12-24T10:15:02.494Z",
-      "interval": {
-        "value": 1,
-        "unit": "days",
-        "resetTime": "00:00",
-        "timezone": "UTC",
-        "resetOption": "flexible"
-      },
-      "nextReset": "2025-12-25T00:00:00.000Z",
-      "lastReset": "2025-12-24T10:15:05.109Z"
+      "nextReset": "2026-02-07T00:00:00.000Z",
+      "lastReset": "2026-02-06T09:43:30.271Z"
     },
     {
       "id": "mihvffr6ie0bgsndx6b",
       "text": "Check in",
-      "done": true,
+      "done": false,
       "createdAt": "2025-12-24T10:19:11.371Z",
       "interval": {
         "value": 1,
@@ -5008,13 +5400,13 @@
         "timezone": "UTC",
         "resetOption": "flexible"
       },
-      "nextReset": "2025-12-25T00:00:00.000Z",
-      "lastReset": "2025-12-24T10:19:13.771Z"
+      "nextReset": "2026-02-07T00:00:00.000Z",
+      "lastReset": "2026-02-06T09:43:30.271Z"
     },
     {
       "id": "mhv130dee2bbvaa5w3a",
       "text": "Checkin App",
-      "done": true,
+      "done": false,
       "createdAt": "2025-12-24T10:22:27.084Z",
       "interval": {
         "value": 1,
@@ -5023,10 +5415,142 @@
         "timezone": "UTC",
         "resetOption": "flexible"
       },
-      "nextReset": "2025-12-25T00:00:00.000Z",
-      "lastReset": "2025-12-24T10:23:29.523Z"
+      "nextReset": "2026-02-07T00:00:00.000Z",
+      "lastReset": "2026-02-06T09:43:30.271Z"
+    },
+    {
+      "id": "mfqxrtsrch2fkn5jppc",
+      "text": "Task",
+      "done": true,
+      "createdAt": "2025-12-24T12:37:00.552Z",
+      "lastReset": "2025-12-24T22:45:06.510Z"
+    },
+    {
+      "id": "id_o87knhzyh_mjkp18qz",
+      "text": "Testnet Dashboard",
+      "done": true,
+      "createdAt": "2025-12-25T00:17:46.438Z",
+      "lastReset": "2025-12-27T11:35:06.608Z"
+    },
+    {
+      "id": "id_ggzp396zk_mjktxj7h",
+      "text": "Cek App",
+      "done": false,
+      "createdAt": "2025-12-25T02:34:33.722Z",
+      "lastReset": "2026-01-16T22:40:53.599Z"
+    },
+    {
+      "id": "id_otfgu5vne_mjl4djqu",
+      "text": "Tria App",
+      "done": false,
+      "createdAt": "2025-12-25T07:32:33.358Z"
+    },
+    {
+      "id": "id_287yfbvsx_mjmv1awt",
+      "text": "Dashboard",
+      "done": true,
+      "createdAt": "2025-12-26T12:41:01.931Z",
+      "lastReset": "2025-12-27T03:27:18.562Z"
+    },
+    {
+      "id": "id_b66hr8hzd_mjnosger",
+      "text": "Duit $2.55 nyangkut anjing",
+      "done": false,
+      "createdAt": "2025-12-27T02:33:57.238Z"
+    },
+    {
+      "id": "id_9vz464njv_mjnqe676",
+      "text": "Dashboard",
+      "done": true,
+      "createdAt": "2025-12-27T03:19:16.984Z",
+      "lastReset": "2025-12-27T21:32:40.428Z"
+    },
+    {
+      "id": "mgrrlu0msn23rffwbto",
+      "text": "Quest",
+      "done": true,
+      "createdAt": "2025-12-27T04:45:09.032Z",
+      "lastReset": "2025-12-28T23:57:55.571Z"
+    },
+    {
+      "id": "id_jsofm2dhf_mjo8572a",
+      "text": "Testnet App",
+      "done": false,
+      "createdAt": "2025-12-27T11:35:48.373Z"
+    },
+    {
+      "id": "id_p4usq8ogd_mjoucwq3",
+      "text": "Daily Chat",
+      "done": false,
+      "createdAt": "2025-12-27T21:58:25.370Z",
+      "interval": {
+        "value": 1,
+        "unit": "days",
+        "resetTime": "00:00",
+        "timezone": "UTC",
+        "resetOption": "flexible"
+      },
+      "nextReset": "2026-02-07T00:00:00.000Z",
+      "lastReset": "2026-02-06T09:43:30.271Z"
+    },
+    {
+      "id": "id_cl3yxq9gs_mjout3be",
+      "text": "Daftar",
+      "done": false,
+      "createdAt": "2025-12-27T22:10:17.167Z"
+    },
+    {
+      "id": "id_ois0e8j42_mjps225d",
+      "text": "Daftar",
+      "done": false,
+      "createdAt": "2025-12-28T13:41:05.098Z"
+    },
+    {
+      "id": "id_brwj3b3jc_mjyszznc",
+      "text": "Checkin",
+      "done": false,
+      "createdAt": "2026-01-09T17:52:21.082Z",
+      "interval": {
+        "value": 1,
+        "unit": "days",
+        "resetTime": "00:00",
+        "timezone": "WIB",
+        "resetOption": "flexible"
+      },
+      "nextReset": "2026-02-06T17:00:00.000Z",
+      "lastReset": "2026-02-06T09:43:30.271Z"
+    },
+    {
+      "id": "id_wctkk2nxu_mlap7pmj",
+      "text": "Daily Stamp",
+      "done": true,
+      "createdAt": "2026-02-06T09:44:33.275Z",
+      "interval": {
+        "value": 1,
+        "unit": "days",
+        "resetTime": "00:00",
+        "timezone": "WIB",
+        "resetOption": "flexible"
+      },
+      "nextReset": "2026-02-06T17:00:00.000Z",
+      "lastReset": "2026-02-06T09:44:37.512Z"
+    },
+    {
+      "id": "id_gs5t0dqdb_mlarol7u",
+      "text": "S2 Daily Checkin",
+      "done": true,
+      "createdAt": "2026-02-06T10:53:35.383Z",
+      "interval": {
+        "value": 1,
+        "unit": "days",
+        "resetTime": "07:00",
+        "timezone": "WIB",
+        "resetOption": "flexible"
+      },
+      "nextReset": "2026-02-07T00:00:00.000Z",
+      "lastReset": "2026-02-06T10:56:12.697Z"
     }
   ],
-  "exportDate": "2025-12-24T10:35:33.276Z",
+  "exportDate": "2026-02-06T12:52:07.525Z",
   "version": "2.0"
 }
